@@ -305,6 +305,22 @@ const UI = (() => {
         ctx.fillText('🦌', cx - Math.cos(a) * 36, cy - Math.sin(a) * 36);
       }
     }
+
+    let danger = false;
+    for (const m of G.monsters) {
+      if (!m.dead && !m.fleeing && Utils.dist(m.x, m.y, G.player.x, G.player.y) < 260) { danger = true; break; }
+    }
+    if (!danger) {
+      for (const c of G.cultists) {
+        if (!c.dead && Utils.dist(c.x, c.y, G.player.x, G.player.y) < 300) { danger = true; break; }
+      }
+    }
+    if (danger) {
+      const a = 0.2 + Math.sin(G.t * 6) * 0.1;
+      ctx.strokeStyle = 'rgba(229,57,53,' + a.toFixed(3) + ')';
+      ctx.lineWidth = 26;
+      ctx.strokeRect(0, 0, vw, vh);
+    }
   }
 
   function drawToasts(ctx, vw) {
@@ -631,6 +647,7 @@ const UI = (() => {
     }
     drawToasts(ctx, vw);
     drawBanner(ctx, vw, vh);
+    Input.drawTouch(ctx);
   }
 
   return { reset, toast, banner, toggle, closeOverlay, openTrade, anyOverlay, update, click, draw };

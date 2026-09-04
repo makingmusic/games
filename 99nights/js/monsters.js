@@ -619,6 +619,10 @@ const Monsters = (() => {
       const nightBoost = G.phase === 'night' ? 1.15 : 1;
       const fireOutBoost = G.phase === 'night' && !World.fireLit() ? 2.4 : 1;
       const aggro = m.provoked || dp < m.k.aggro * nightBoost * fireOutBoost;
+      if (aggro && !m.growled && !m.fleeing) {
+        m.growled = true;
+        if (dp < 800) Sfx.sfx(m.kind === 'snake' ? 'hiss' : (m.kind === 'bat' || m.kind === 'owl' ? 'screech' : 'growl'));
+      }
       switch (m.kind) {
         case 'owl': actOwl(m, dt, dp, aggro); break;
         case 'bat': actBat(m, dt, dp); break;
@@ -932,6 +936,28 @@ const Monsters = (() => {
     if (K.crown) {
       Utils.font(ctx, Math.round(K.r * 0.55));
       ctx.fillText('👑', 0, -K.r * 0.95);
+    }
+    if (m.kind === 'wolf' || m.kind === 'alphawolf' || m.kind === 'bear' || m.kind === 'cat' || m.kind === 'jaguar' || m.kind === 'fox' || m.kind === 'bat') {
+      ctx.fillStyle = '#fff';
+      const fy = K.r * 0.3, fx = K.r * 0.22, fs = Math.max(3, K.r * 0.11);
+      ctx.beginPath();
+      ctx.moveTo(-fx - fs, fy); ctx.lineTo(-fx + fs, fy); ctx.lineTo(-fx, fy + fs * 1.7);
+      ctx.moveTo(fx - fs, fy); ctx.lineTo(fx + fs, fy); ctx.lineTo(fx, fy + fs * 1.7);
+      ctx.fill();
+    }
+    if (G.phase === 'night' && m.provoked && !flee) {
+      const ex = K.r * 0.28, ey = -K.r * 0.55, er = Math.max(2.5, K.r * 0.09);
+      ctx.globalAlpha = 0.35 * baseAlpha;
+      ctx.fillStyle = '#ff1744';
+      ctx.beginPath();
+      ctx.arc(-ex, ey, er * 2.2, 0, TAU);
+      ctx.arc(ex, ey, er * 2.2, 0, TAU);
+      ctx.fill();
+      ctx.globalAlpha = baseAlpha;
+      ctx.beginPath();
+      ctx.arc(-ex, ey, er, 0, TAU);
+      ctx.arc(ex, ey, er, 0, TAU);
+      ctx.fill();
     }
     if (m.tele > 0 || m.mode === 'tele' || m.mode === 'squash') {
       ctx.fillStyle = '#ff1744';

@@ -211,6 +211,10 @@ const Cultists = (() => {
     c.hp -= dmg;
     c.hurtT = 0.18;
     c.provoked = true;
+    if (!c.snarled) {
+      c.snarled = true;
+      Sfx.sfx('growl');
+    }
     c.kbx += Math.cos(ang) * 250;
     c.kby += Math.sin(ang) * 250;
     Sfx.sfx('thwack');
@@ -246,6 +250,7 @@ const Cultists = (() => {
     const kept = World.keepOut(c.x, c.y, c.r);
     c.x = kept.x;
     c.y = kept.y;
+    if (G.phase === 'night' && Math.random() < 0.02) Effects.poof(c.x + Utils.rand(-10, 10), c.y - 12, '#37474f', 2);
   }
 
   function update(dt) {
@@ -375,6 +380,7 @@ const Cultists = (() => {
       spawn(type, bx + Utils.rand(-70, 70), by + Utils.rand(-70, 70), { targetFire: true });
     }
     UI.toast('Cultists are raiding your camp! 🕯️');
+    Sfx.sfx('howl');
     Effects.ring(CFG.CAMP.x, CFG.CAMP.y, '#ffab91');
   }
 
@@ -428,6 +434,15 @@ const Cultists = (() => {
     ctx.arc(-c.r * 0.13, -c.r * 0.45, 1.8, 0, TAU);
     ctx.arc(c.r * 0.13, -c.r * 0.45, 1.8, 0, TAU);
     ctx.fill();
+    if (G.phase === 'night') {
+      ctx.globalAlpha = 0.4;
+      ctx.fillStyle = c.type === 'deerElite' ? '#ff1744' : '#ff8a65';
+      ctx.beginPath();
+      ctx.arc(-c.r * 0.13, -c.r * 0.45, 4.5, 0, TAU);
+      ctx.arc(c.r * 0.13, -c.r * 0.45, 4.5, 0, TAU);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
     if (c.k.mask === 'deer') {
       ctx.strokeStyle = '#d7ccc8';
       ctx.lineWidth = 2;

@@ -11,3 +11,8 @@ games/
 ## Games
 
 - **99nights** — "99 Nights": a forest rescue survival game. Original spec in `99nights/docs/original_specs.md`, build prompt in `99nights/docs/leprompt.md`.
+
+## Publishing
+
+See [HOSTING.md](HOSTING.md) — GitHub Pages, Cloudflare Pages, and app
+stores, same process for every game.

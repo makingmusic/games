@@ -11,6 +11,12 @@ const Player = (() => {
     if (Input.down('down')) my += 1;
     if (Input.down('left')) mx -= 1;
     if (Input.down('right')) mx += 1;
+    const tv = Input.stick();
+    mx += tv.x;
+    my += tv.y;
+    let ml = Math.hypot(mx, my);
+    if (ml > 1) { mx /= ml; my /= ml; ml = 1; }
+    else if (ml < 0.18) { mx = 0; my = 0; ml = 0; }
     p.moving = !!(mx || my);
     if (p.moving) {
       const l = Math.hypot(mx, my);

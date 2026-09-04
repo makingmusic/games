@@ -75,6 +75,9 @@ const Sfx = (() => {
     rescue: () => [659, 784, 988].forEach((f, i) => tone(f, 0.15, 'sine', 0.6, 0, i * 0.08)),
     roar: () => { tone(82, 0.7, 'sawtooth', 1, -25); tone(55, 0.9, 'sawtooth', 0.9, -12, 0.1); noise(0.5, 0.7, 300); },
     croak: () => { tone(140, 0.22, 'sawtooth', 0.9, -60); tone(95, 0.28, 'square', 0.6, -30, 0.08); },
+    growl: () => { tone(95, 0.5, 'sawtooth', 0.9, -30); noise(0.35, 0.5, 350); },
+    hiss: () => noise(0.4, 0.6, 4000),
+    screech: () => tone(1800, 0.35, 'sawtooth', 0.5, -1200),
     shoot: () => tone(520, 0.06, 'square', 0.3, -200),
     parry: () => tone(1500, 0.08, 'sine', 0.5, 200),
   };
