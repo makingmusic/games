@@ -17,6 +17,16 @@ const NPCs = (() => {
         { label: '3 shiny gems 💎', cost: { coins: 35 }, give: { gems: 3 } },
       ],
     },
+    pelt: {
+      title: '🐾 Pelt Trader — powers for pelts!',
+      items: [
+        { label: 'Flashlight — see farther at night 🔦', cost: { pelt: 3 }, once: 'torch' },
+        { label: 'Warm Blanket — hunger drains slower 🧣', cost: { pelt: 3 }, once: 'blanket' },
+        { label: 'Swift Boots — run 15% faster 🥾', cost: { pelt: 4 }, once: 'boots' },
+        { label: 'Star Whistle — kids attack faster ⭐', cost: { pelt: 4 }, once: 'whistle' },
+        { label: 'Heart Locket — +1 max heart ❤️', cost: { pelt: 5 }, power: 'heart' },
+      ],
+    },
   };
 
   function kidById(id) {
@@ -41,6 +51,13 @@ const NPCs = (() => {
     for (const k in cost) G.inv[k] -= cost[k];
   }
 
+  const POWER_MSGS = {
+    torch: 'Flashlight got! You see farther at night! 🔦',
+    blanket: 'Warm Blanket got! Hunger drains slower! 🧣',
+    boots: 'Swift Boots got! You run faster! 🥾',
+    whistle: 'Star Whistle got! Kids attack faster! ⭐',
+  };
+
   function buy(shopId, idx) {
     const shop = SHOPS[shopId];
     if (!shop || !shop.items[idx]) return;
@@ -50,13 +67,19 @@ const NPCs = (() => {
       return;
     }
     if (!canAfford(item.cost)) {
-      UI.toast("Can't afford that yet!");
+      UI.toast("Can't afford that yet! Hunt furry animals for pelts 🐾");
       return;
     }
     pay(item.cost);
     if (item.once) {
       G[item.once] = true;
-      UI.toast(item.once === 'sharpAxe' ? 'Sharp Axe got! Double damage! 🪓' : 'Lantern got! Brighter nights! 🏮');
+      UI.toast(POWER_MSGS[item.once] || (item.once === 'sharpAxe' ? 'Sharp Axe got! Double damage! 🪓' : 'Lantern got! Brighter nights! 🏮'));
+    }
+    if (item.power === 'heart') {
+      G.player.maxHp++;
+      G.player.hp = G.player.maxHp;
+      UI.toast('Heart Locket! +1 max heart! ❤️');
+      Effects.heart(G.player.x, G.player.y - 30);
     }
     if (item.give) for (const k in item.give) addInv(k, item.give[k]);
     Sfx.sfx('coin');
@@ -71,7 +94,7 @@ const NPCs = (() => {
     G.stats.rescued++;
     Effects.stars(cave.cage.x, cave.cage.y, 14);
     Sfx.sfx('rescue');
-    UI.banner('You rescued ' + kid.name + '! ' + kid.emoji, 'Bring them safe back to camp!');
+    UI.banner('You rescued ' + kid.name + '!', kid.name + ' joins your team and throws stars!');
     if (G.kids.every((k) => k.rescued)) {
       G.deerCountdown = 2;
       UI.toast('You hear giant hooves... 🦌');
@@ -94,6 +117,10 @@ const NPCs = (() => {
     }
     if (Utils.dist(p.x, p.y, G.props.featherTrader.x, G.props.featherTrader.y) < 100) {
       UI.openTrade('feather');
+      return true;
+    }
+    if (Utils.dist(p.x, p.y, G.props.peltTrader.x, G.props.peltTrader.y) < 100) {
+      UI.openTrade('pelt');
       return true;
     }
     if (Utils.dist(p.x, p.y, CFG.CAMP.x, CFG.CAMP.y) < 115) {
@@ -125,6 +152,7 @@ const NPCs = (() => {
     }
     if (G.salesman && Utils.dist(p.x, p.y, G.salesman.x, G.salesman.y) < 110) return 'Press E — Shop the Salesman 💼';
     if (Utils.dist(p.x, p.y, G.props.featherTrader.x, G.props.featherTrader.y) < 110) return 'Press E — Trade feathers 🪶';
+    if (Utils.dist(p.x, p.y, G.props.peltTrader.x, G.props.peltTrader.y) < 110) return 'Press E — Trade pelts for powers 🐾';
     if (Utils.dist(p.x, p.y, CFG.CAMP.x, CFG.CAMP.y) < 125) {
       return 'E — Feed fire 🪵 (' + G.inv.wood + ')   ·   U — Upgrade 🔥 Lv' + G.fire.level;
     }
@@ -220,10 +248,42 @@ const NPCs = (() => {
   function checkStickers() {
     if (G.stats.chopped >= 1) sticker('chop', 'First tree chopped!');
     if (G.stats.coinsEarned >= 1) sticker('coins', 'First coins found!');
+    if ((G.inv.pelt || 0) >= 1) sticker('pelt', 'Lucky pelt! Trade it for powers!');
+    if (G.torch || G.boots || G.blanket || G.whistle) sticker('power', 'First power earned!');
     if (G.stats.rescued >= 1) sticker('rescue', 'First kid rescued!');
     if (G.stats.rescued >= 4) sticker('heroes', 'All 4 kids rescued!');
     if (G.fire.level >= 2) sticker('fire2', 'Campfire Level 2!');
   }
+  function kidCombat(dt) {
+    for (const kid of G.kids) {
+      if (!kid.rescued) continue;
+      kid.atkCd = Math.max(0, (kid.atkCd || 0) - dt);
+      if (kid.atkCd > 0) continue;
+      const range = kid.home ? 430 : 380;
+      let best = null, bd = range;
+      for (const m of G.monsters) {
+        if (m.dead || m.fleeing || m.hidden) continue;
+        const d = Utils.dist(kid.x, kid.y, m.x, m.y);
+        if (d < bd) { bd = d; best = { kind: 'm', ref: m }; }
+      }
+      if (!best) {
+        for (const c of G.cultists) {
+          if (c.dead) continue;
+          const d = Utils.dist(kid.x, kid.y, c.x, c.y);
+          if (d < bd) { bd = d; best = { kind: 'c', ref: c }; }
+        }
+      }
+      if (best) {
+        const t = best.ref;
+        Projectiles.spawn(kid.x, kid.y - 12, Utils.ang(kid.x, kid.y, t.x, t.y), 'star', 'kid');
+        Sfx.sfx('shoot');
+        Effects.stars(kid.x, kid.y - 20, 3);
+        kid.atkCd = (kid.home ? 1.4 : 1.1) * (G.whistle ? 0.7 : 1);
+        sticker('team', kid.name + ' fights with you!');
+      }
+    }
+  }
+
   function onNewDay() {
     if (G.day === 20 && !G.salesman) {
       G.salesman = { x: CFG.CAMP.x + 165, y: CFG.CAMP.y - 55 };
@@ -237,6 +297,7 @@ const NPCs = (() => {
     autoPickBerries(dt);
     autoRescue();
     hugAura(dt);
+    kidCombat(dt);
     checkStickers();
     if (G.salesman && G.phase === 'night') {
       Effects.poof(G.salesman.x, G.salesman.y, '#cfd8dc', 8);
@@ -329,6 +390,9 @@ const NPCs = (() => {
       Utils.font(ctx, 10);
       ctx.fillStyle = '#c0392b';
       ctx.fillText('!', 14, -20);
+    } else {
+      Utils.font(ctx, 11);
+      ctx.fillText('⭐', 12, -18);
     }
     ctx.restore();
   }
@@ -385,6 +449,8 @@ const NPCs = (() => {
     }
     const ft = G.props.featherTrader;
     ents.push({ y: ft.y + 20, f: () => drawTrader(ctx, ft.x, ft.y + 20, '🧢', 'Feather Trader', Utils.dist(p.x, p.y, ft.x, ft.y) < 160) });
+    const pt = G.props.peltTrader;
+    ents.push({ y: pt.y + 20, f: () => drawTrader(ctx, pt.x, pt.y + 20, '🎩', 'Pelt Trader — powers!', Utils.dist(p.x, p.y, pt.x, pt.y) < 160) });
   }
 
   return { SHOPS, update, pushEnts, tryInteract, currentPrompt, onNewDay, buy, kidById };

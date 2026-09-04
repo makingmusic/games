@@ -18,6 +18,13 @@ const MKIND = {
   deer: { hp: 25, r: 56, spd: 140, color: '#4a3628', belly: '#5f4835', emoji: '🦌', boss: true, aggro: 9999, touch: 1, loot: 'deer' },
 };
 
+const MNAMES = {
+  owl: 'Owl', bat: 'Bat', ram: 'Ram', cat: 'Cat', wolf: 'Wolf', alphawolf: 'Alpha Wolf',
+  bear: 'Bear', fox: 'Fox', mammoth: 'Mammoth', lavamammoth: 'Lava Mammoth', jaguar: 'Jaguar',
+  snake: 'Snake', frogK: 'Frog King', frogP: 'Purple Frog', frogB: 'Blue Frog', frogO: 'Baby Frog',
+  deer: 'THE DEER',
+};
+
 const Monsters = (() => {
   const CHARGE = {
     ram: { cd: 2.6, tele: 0.8, spd: 470, dur: 1.05, dizzy: 1.2, trig: 380, dmg: 2 },
@@ -26,6 +33,40 @@ const Monsters = (() => {
     jaguar: { cd: 2.5, tele: 0.5, spd: 460, dur: 0.45, dizzy: 0.9, trig: 220, dmg: 1 },
   };
   let dirT = 0;
+
+  function emotionOf(m) {
+    if (m.fleeing) return '💨';
+    if (m.mode === 'dizzy') return '😵';
+    if (m.mode === 'tele' || m.mode === 'charge' || m.mode === 'dive' || m.mode === 'lunge' || m.mode === 'roar' || m.mode === 'shock' || m.tele > 0) return '😡';
+    if (m.provoked) return '😠';
+    return '🙂';
+  }
+
+  function drawBadge(ctx, y, name, face, emo) {
+    Utils.font(ctx, 13);
+    const tw = ctx.measureText(name).width;
+    const w = tw + 66;
+    const h = 30;
+    const x = -w / 2;
+    ctx.fillStyle = 'rgba(14,17,25,0.8)';
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 10);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    Utils.font(ctx, 22);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(face, x + 20, y + h / 2 + 1);
+    Utils.font(ctx, 13);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(name, x + 36, y + h / 2 + 1);
+    Utils.font(ctx, 16);
+    ctx.textAlign = 'center';
+    ctx.fillText(emo, x + w - 15, y + h / 2 + 1);
+  }
 
   function spawn(kind, x, y, opts = {}) {
     const K = MKIND[kind];
@@ -66,6 +107,9 @@ const Monsters = (() => {
     else if (L === 'frogK') { drop('coin', 4); drop('gem', 1); }
     else if (L === 'frog') drop('coin', 2);
     else if (L === 'frogO') { drop('coin', 1); if (Math.random() < 0.2) drop('gem', 1); }
+    else if (L === 'none') { if (Math.random() < 0.2) drop('pelt', 1); }
+    const peltChance = { wolf: 0.25, alpha: 0.5, bear: 0.4, cat: 0.25, ram: 0.25, jaguar: 0.3, mammoth: 0.6, lava: 0.7 }[L];
+    if (peltChance && Math.random() < peltChance) drop('pelt', (L === 'mammoth' || L === 'lava') ? 2 : 1);
   }
 
   function startFlee(m) {
@@ -84,7 +128,9 @@ const Monsters = (() => {
     G.stats.defeated++;
     Effects.poof(m.x, m.y, '#a5d6a7', 12);
     Effects.stars(m.x, m.y, 10);
-    Sfx.sfx('poof');
+    Effects.ring(m.x, m.y, '#9b59b6');
+    Effects.shake(m.kind === 'frogK' ? 7 : 3);
+    Sfx.sfx(m.kind === 'frogK' ? 'roar' : 'poof');
     (m.split || []).forEach((k, i) => {
       const c = spawn(k, m.x + Math.cos(i * 2.1) * 36, m.y + Math.sin(i * 2.1) * 36, { anchor: m.anchor, provoked: true, mode: 'rest', mt: 0, restT: 0.3 });
       if (m.kind === 'frogP' && k === 'frogB') c.split = i === 0 ? ['frogO', 'frogO'] : ['frogO'];
@@ -110,9 +156,11 @@ const Monsters = (() => {
         Effects.poof(m.x, m.y, '#b07ce0', 18);
         Effects.shake(14);
         Game.onDeerDefeated();
-      } else if (m.hp < 20 && !m.enraged) {
+      } else if (!m.enraged && m.hp <= m.maxHp * 0.5) {
         m.enraged = true;
         UI.toast('The Deer is furious! 😤');
+        Effects.shake(8);
+        Sfx.sfx('roar');
       }
       return;
     }
@@ -406,6 +454,9 @@ const Monsters = (() => {
         m.mode = 'rest';
         m.mt = 0;
         m.restT = Utils.rand(0.45, 0.85);
+        Effects.poof(m.x, m.y, '#a5d6a7', 6);
+        Effects.ring(m.x, m.y, '#7ed37e');
+        if (m.kind === 'frogK') Effects.shake(5);
       }
       return;
     }
@@ -421,6 +472,8 @@ const Monsters = (() => {
     if (m.mt > m.restT && (aggro || Utils.dist(m.x, m.y, m.anchor.x, m.anchor.y) > 500)) {
       m.mode = 'squash';
       m.mt = 0;
+      Sfx.sfx('croak');
+      Effects.ring(m.x, m.y, '#ce93d8');
     }
   }
 
@@ -435,7 +488,7 @@ const Monsters = (() => {
       m.tele = 0.2;
       const dur = m.enraged ? 0.65 : 0.9;
       if (m.mt < dur - 0.3) m.ca = Utils.ang(m.x, m.y, p.x, p.y);
-      if (m.mt >= dur) { m.mode = 'charge'; m.mt = 0; m.hitDone = false; }
+      if (m.mt >= dur) { m.mode = 'charge'; m.mt = 0; m.hitDone = false; Effects.shake(8); Sfx.sfx('roar'); }
       return;
     }
     if (m.mode === 'charge') {
@@ -445,11 +498,38 @@ const Monsters = (() => {
       m.x = Utils.clamp(m.x, 60, CFG.W - 60);
       m.y = Utils.clamp(m.y, 60, CFG.H - 60);
       m.dir = Math.cos(m.ca) >= 0 ? 1 : -1;
+      if (Math.random() < dt * 22) Effects.ember(m.x + Utils.rand(-20, 20), m.y - 10);
       if (!m.hitDone && dp < m.r + 26) {
         Player.hurt(2, m.x, m.y);
         m.hitDone = true;
       }
       if (m.mt > 0.85) { m.mode = 'dizzy'; m.mt = 0; }
+      return;
+    }
+    if (m.mode === 'roar') {
+      if (m.mt >= 0.7) {
+        m.mode = 'shock';
+        m.mt = 0;
+        m.shockR = 0;
+        m.shockHit = false;
+        Sfx.sfx('roar');
+        Effects.shake(10);
+        Effects.ring(m.x, m.y, '#ff1744');
+        if (!m.roared) { m.roared = true; UI.toast('The Deer ROARS! Run from the ring!'); }
+      } else if (Math.random() < dt * 8) {
+        Effects.poof(m.x + Utils.rand(-40, 40), m.y - Utils.rand(0, 50), '#5d4037', 3);
+      }
+      return;
+    }
+    if (m.mode === 'shock') {
+      m.shockR = (m.shockR || 0) + dt * 380;
+      const ddp = Utils.dist(m.x, m.y, p.x, p.y);
+      if (!m.shockHit && Math.abs(ddp - m.shockR) < 28) {
+        Player.hurt(1, m.x, m.y);
+        m.shockHit = true;
+      }
+      if (Math.random() < dt * 10) Effects.ember(m.x + Utils.rand(-40, 40), m.y + Utils.rand(-30, 10));
+      if (m.shockR > 320) { m.mode = 'stalk'; m.mt = 0; m.shockR = 0; }
       return;
     }
     if (m.mode === 'dizzy') {
@@ -486,6 +566,14 @@ const Monsters = (() => {
     moveToward(m, p.x, p.y, m.enraged ? 185 : 140, dt);
     touchDamage(m);
     if (m.castCd > 0) m.castCd -= dt;
+    if (m.roarCd === undefined) m.roarCd = 5;
+    m.roarCd -= dt;
+    if (m.roarCd <= 0 && dp > 120) {
+      m.mode = 'roar';
+      m.mt = 0;
+      m.roarCd = m.enraged ? 5 : 8;
+      return;
+    }
     if (m.mt > 1.2) {
       m.mt = 0;
       if (m.castCd <= 0) {
@@ -542,6 +630,11 @@ const Monsters = (() => {
         case 'snake': actSnake(m, dt, dp, aggro); break;
         case 'frogK': case 'frogP': case 'frogB': case 'frogO': actFrog(m, dt, dp, aggro); break;
         case 'deer': actDeer(m, dt, dp); break;
+      }
+      if (!m.dead && !m.guard) {
+        const kept = World.keepOut(m.x, m.y, m.r * 0.4);
+        m.x = kept.x;
+        m.y = kept.y;
       }
     }
     G.monsters = G.monsters.filter((m) => !m.dead);
@@ -657,6 +750,7 @@ const Monsters = (() => {
       ctx.fillStyle = '#7ed37e';
       ctx.fillRect(-w / 2, -m.r - 14, w * Math.max(0, m.hp / m.maxHp), 6);
     }
+    drawBadge(ctx, -m.r - 48, MNAMES.snake, '🐍', emotionOf(m));
     ctx.restore();
   }
 
@@ -722,6 +816,33 @@ const Monsters = (() => {
       ctx.ellipse(0, 0, 56, 34, 0, 0, TAU);
       ctx.fill();
     }
+    if (m.enraged) {
+      ctx.strokeStyle = 'rgba(255,23,68,' + (0.45 + Math.sin(m.animT * 6) * 0.2) + ')';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.ellipse(0, 10, 68 + Math.sin(m.animT * 6) * 4, 44, 0, 0, TAU);
+      ctx.stroke();
+    }
+    if (m.mode === 'roar') {
+      ctx.strokeStyle = 'rgba(255,23,68,' + (0.5 + Math.sin(m.animT * 20) * 0.3) + ')';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.arc(0, -10, 60 + m.mt * 40, 0, TAU);
+      ctx.stroke();
+    }
+    if (m.mode === 'shock' && m.shockR > 0) {
+      ctx.strokeStyle = 'rgba(255,82,82,0.9)';
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.arc(0, 0, m.shockR, 0, TAU);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,213,79,0.6)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, m.shockR, 0, TAU);
+      ctx.stroke();
+    }
+    drawBadge(ctx, -104, MNAMES.deer, '🦌', emotionOf(m));
     ctx.restore();
   }
 
@@ -731,7 +852,7 @@ const Monsters = (() => {
     ctx.translate(m.x, m.y);
     const baseAlpha = m.hidden ? 0.28 : 1;
     ctx.globalAlpha = baseAlpha;
-    if (m.tele > 0 || (m.mode === 'tele' && m.mt > 0)) ctx.translate(Utils.rand(-2, 2), Utils.rand(-2, 2));
+    if (m.tele > 0 || (m.mode === 'tele' && m.mt > 0) || m.mode === 'squash') ctx.translate(Utils.rand(-2, 2), Utils.rand(-2, 2));
     ctx.fillStyle = 'rgba(0,0,0,0.25)';
     ctx.beginPath();
     ctx.ellipse(0, K.r * 0.85, K.r * 0.9, K.r * 0.3, 0, 0, TAU);
@@ -812,7 +933,7 @@ const Monsters = (() => {
       Utils.font(ctx, Math.round(K.r * 0.55));
       ctx.fillText('👑', 0, -K.r * 0.95);
     }
-    if (m.tele > 0 || m.mode === 'tele') {
+    if (m.tele > 0 || m.mode === 'tele' || m.mode === 'squash') {
       ctx.fillStyle = '#ff1744';
       ctx.beginPath();
       ctx.arc(-K.r * 0.3, -K.r * 0.35, K.r * 0.16, 0, TAU);
@@ -838,6 +959,8 @@ const Monsters = (() => {
       ctx.fillStyle = '#7ed37e';
       ctx.fillRect(-w / 2, -K.r - 16, w * Math.max(0, m.hp / m.maxHp), 6);
     }
+    ctx.globalAlpha = baseAlpha;
+    drawBadge(ctx, -K.r - 48, MNAMES[m.kind] || m.kind, K.emoji, emotionOf(m));
     ctx.restore();
   }
 

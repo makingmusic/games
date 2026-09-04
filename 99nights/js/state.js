@@ -26,7 +26,7 @@ function makeState() {
     t: 0, day: 1, phase: 'day', phaseT: 0,
     paused: false, over: false, won: false, loseReason: '', overT: 0, winPending: 0,
     deerCountdown: 0,
-    inv: { wood: 4, food: 2, feathers: 0, coins: 0, gems: 0 },
+    inv: { wood: 4, food: 2, feathers: 0, coins: 0, gems: 0, pelt: 0 },
     sharpAxe: false, lantern: false,
     fire: { level: 1, fuel: 70, wasOut: false, emberAcc: 0 },
     player: {

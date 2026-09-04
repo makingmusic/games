@@ -15,8 +15,9 @@ const Player = (() => {
     if (p.moving) {
       const l = Math.hypot(mx, my);
       mx /= l; my /= l;
-      p.x += mx * CFG.PLAYER.speed * dt;
-      p.y += my * CFG.PLAYER.speed * dt;
+      const spd = CFG.PLAYER.speed * (G.boots ? 1.15 : 1);
+      p.x += mx * spd * dt;
+      p.y += my * spd * dt;
     }
     const mouseRecent = performance.now() - Input.mouse.lastMoveT < 2500;
     if (mouseRecent) {
@@ -74,7 +75,7 @@ const Player = (() => {
         pk.dead = true;
         addInv(pk.kind, 1);
         Sfx.sfx(pk.kind === 'coin' ? 'coin' : pk.kind === 'gem' ? 'gem' : 'pickup');
-        const em = { wood: '🪵', food: '🍒', coin: '🪙', gem: '💎', feather: '🪶' }[pk.kind];
+        const em = { wood: '🪵', food: '🍒', coin: '🪙', gem: '💎', feather: '🪶', pelt: '🐾' }[pk.kind];
         Effects.text(p.x, p.y - 32, '+1 ' + em, '#ffffff', 15);
       }
     }

@@ -14,6 +14,7 @@ const Projectiles = (() => {
     dart: { spd: 260, dmg: 1, color: '#f5f0e0', fire: 4 },
     spear: { spd: 200, dmg: 1, color: '#8bc34a', poison: 3, fire: 0 },
     spirit: { spd: 220, dmg: 1, color: '#b07ce0', fire: 0 },
+    star: { spd: 460, dmg: 1, color: '#ffd54f', fire: 0 },
   };
 
   function spawn(x, y, ang, kind, from) {
@@ -38,6 +39,31 @@ const Projectiles = (() => {
       pr.x += pr.vx * dt;
       pr.y += pr.vy * dt;
       if (pr.t > pr.life) { pr.dead = true; continue; }
+      if (pr.from === 'kid') {
+        let hit = false;
+        for (const m of G.monsters) {
+          if (m.dead || m.fleeing || m.hidden) continue;
+          if (Utils.dist(pr.x, pr.y, m.x, m.y) < m.r + 8) {
+            Monsters.hurt(m, pr.dmg, pr.ang);
+            Effects.stars(pr.x, pr.y, 4);
+            pr.dead = true;
+            hit = true;
+            break;
+          }
+        }
+        if (!hit) {
+          for (const c of G.cultists) {
+            if (c.dead) continue;
+            if (Utils.dist(pr.x, pr.y, c.x, c.y) < c.r + 8) {
+              Cultists.hurt(c, pr.dmg, pr.ang);
+              Effects.stars(pr.x, pr.y, 4);
+              pr.dead = true;
+              break;
+            }
+          }
+        }
+        continue;
+      }
       if (Utils.dist(pr.x, pr.y, p.x, p.y) < 15) {
         Player.hurt(pr.dmg, pr.x, pr.y);
         if (pr.poison) p.poisonT = Math.max(p.poisonT, pr.poison);
@@ -45,7 +71,7 @@ const Projectiles = (() => {
         Effects.hit(pr.x, pr.y);
         continue;
       }
-      if (pr.from === 'cultist' && World.fireLit() && Utils.dist(pr.x, pr.y, CFG.CAMP.x, CFG.CAMP.y - 10) < 42) {
+      if (!CFG.KID_MODE && pr.from === 'cultist' && World.fireLit() && Utils.dist(pr.x, pr.y, CFG.CAMP.x, CFG.CAMP.y - 10) < 42) {
         G.fire.fuel = Math.max(0, G.fire.fuel - pr.fire);
         Effects.poof(pr.x, pr.y, '#adb5bd', 5);
         pr.dead = true;
@@ -73,6 +99,22 @@ const Projectiles = (() => {
         ctx.beginPath();
         ctx.arc(0, 0, 5, 0, TAU);
         ctx.fill();
+      } else if (pr.kind === 'star') {
+        ctx.rotate(-pr.ang);
+        ctx.fillStyle = 'rgba(255,213,79,0.4)';
+        ctx.beginPath();
+        ctx.arc(0, 0, 10, 0, TAU);
+        ctx.fill();
+        ctx.fillStyle = '#ffd54f';
+        ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+          const a = (i / 5) * TAU - Math.PI / 2;
+          const a2 = a + TAU / 10;
+          ctx.lineTo(Math.cos(a) * 8, Math.sin(a) * 8);
+          ctx.lineTo(Math.cos(a2) * 8 * 0.45, Math.sin(a2) * 8 * 0.45);
+        }
+        ctx.closePath();
+        ctx.fill();
       } else {
         ctx.strokeStyle = pr.color;
         ctx.lineWidth = pr.kind === 'spear' ? 5 : 3;
@@ -97,6 +139,41 @@ const Projectiles = (() => {
 })();
 
 const Cultists = (() => {
+  const CNAMES = {
+    deer: 'Deer Cultist', deerElite: 'Red Cultist', cat: 'Cat Cultist',
+    owl: 'Owl Cultist', batC: 'Bat Cultist', ramC: 'Ram Cultist',
+  };
+  const CFACES = { deer: '🦌', deerElite: '🦌', cat: '🐱', owl: '🦉', batC: '🦇', ramC: '🐏' };
+
+  function cultBadge(ctx, c) {
+    const name = CNAMES[c.type] || 'Cultist';
+    const face = CFACES[c.type] || '😈';
+    const emo = c.mode === 'wind' ? '😡' : (c.provoked ? '😠' : '🙂');
+    Utils.font(ctx, 13);
+    const tw = ctx.measureText(name).width;
+    const w = tw + 66;
+    const h = 30;
+    const x = -w / 2, y = -c.r - 52;
+    ctx.fillStyle = 'rgba(14,17,25,0.8)';
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 10);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    Utils.font(ctx, 22);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(face, x + 20, y + h / 2 + 1);
+    Utils.font(ctx, 13);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(name, x + 36, y + h / 2 + 1);
+    Utils.font(ctx, 16);
+    ctx.textAlign = 'center';
+    ctx.fillText(emo, x + w - 15, y + h / 2 + 1);
+  }
+
   function spawn(type, x, y, opts = {}) {
     const K = CTYPES[type];
     const c = Object.assign({
@@ -164,6 +241,13 @@ const Cultists = (() => {
     c.y = Utils.clamp(col.y, 40, CFG.H - 40);
   }
 
+  function keepC(c) {
+    if (c.dead) return;
+    const kept = World.keepOut(c.x, c.y, c.r);
+    c.x = kept.x;
+    c.y = kept.y;
+  }
+
   function update(dt) {
     const p = G.player;
     for (const c of G.cultists) {
@@ -176,6 +260,7 @@ const Cultists = (() => {
       c.y += c.kby * dt;
       c.kbx *= Math.exp(-6 * dt);
       c.kby *= Math.exp(-6 * dt);
+      keepC(c);
       const dp = Utils.dist(c.x, c.y, p.x, p.y);
       const dc = Utils.dist(c.x, c.y, CFG.CAMP.x, CFG.CAMP.y);
       const engagePlayer = dp < 460 || !c.targetFire || c.provoked;
@@ -192,11 +277,13 @@ const Cultists = (() => {
             c.mt = 0;
             c.shootCd = 2;
           }
+          keepC(c);
           continue;
         }
         if (dp < 70 && c.shootCd <= 0) {
           c.mode = 'wind';
           c.mt = 0;
+          keepC(c);
           continue;
         }
         if (dp > 150 && c.throwCd <= 0 && dp < 420) {
@@ -212,6 +299,7 @@ const Cultists = (() => {
           Player.hurt(1, c.x, c.y);
           c.touchCd = 1.2;
         }
+        keepC(c);
         continue;
       }
 
@@ -250,6 +338,7 @@ const Cultists = (() => {
           c.touchCd = 1.2;
         }
       }
+      keepC(c);
     }
     G.cultists = G.cultists.filter((c) => !c.dead);
   }
@@ -403,6 +492,7 @@ const Cultists = (() => {
       ctx.fillStyle = '#7ed37e';
       ctx.fillRect(-w / 2, -c.r - 20, w * Math.max(0, c.hp / c.maxHp), 5);
     }
+    cultBadge(ctx, c);
     ctx.restore();
   }
 

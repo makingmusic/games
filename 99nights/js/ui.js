@@ -6,7 +6,7 @@ const UI = (() => {
     starve: { emoji: '🍽️', title: 'Out of snacks!', tip: 'Pick berries every day — meals near the fire fill you up more!' },
     forest: { emoji: '🌲', title: 'The forest kept them forever...', tip: 'Rescue all four kids before Night 99 ends.' },
   };
-  const ICONS = { wood: '🪵', food: '🍒', feather: '🪶', feathers: '🪶', coins: '🪙', coin: '🪙', gems: '💎', gem: '💎' };
+  const ICONS = { wood: '🪵', food: '🍒', feather: '🪶', feathers: '🪶', coins: '🪙', coin: '🪙', gems: '💎', gem: '💎', pelt: '🐾' };
 
   function reset() {
     confetti = [];
@@ -214,7 +214,7 @@ const UI = (() => {
       ctx.fillText((CFG.MAX_DAY - G.day + 1) + ' nights left to save the kids!', vw / 2, 76);
     }
 
-    const chips = [['🪵', G.inv.wood], ['🍒', G.inv.food], ['🪶', G.inv.feathers], ['🪙', G.inv.coins], ['💎', G.inv.gems]];
+    const chips = [['🪵', G.inv.wood], ['🍒', G.inv.food], ['🪶', G.inv.feathers], ['🐾', G.inv.pelt || 0], ['🪙', G.inv.coins], ['💎', G.inv.gems]];
     chips.forEach((ch, i) => {
       const x = vw - 24 - (chips.length - i) * 92;
       ctx.fillStyle = 'rgba(14,17,25,0.8)';
@@ -377,18 +377,18 @@ const UI = (() => {
     ctx.textAlign = 'center';
     ctx.fillStyle = '#ffe082';
     ctx.fillText('🎒 Backpack', vw / 2, vh / 2 - 185);
-    const items = [['🪵', 'Wood', G.inv.wood], ['🍒', 'Food', G.inv.food], ['🪶', 'Feathers', G.inv.feathers], ['🪙', 'Coins', G.inv.coins], ['💎', 'Gems', G.inv.gems]];
+    const items = [['🪵', 'Wood', G.inv.wood], ['🍒', 'Food', G.inv.food], ['🪶', 'Feathers', G.inv.feathers], ['🐾', 'Pelts', G.inv.pelt || 0], ['🪙', 'Coins', G.inv.coins], ['💎', 'Gems', G.inv.gems]];
     items.forEach((it, i) => {
-      const x = vw / 2 - 285 + i * 116;
+      const x = vw / 2 - 312 + i * 104;
       ctx.fillStyle = 'rgba(255,255,255,0.07)';
       ctx.beginPath();
-      ctx.roundRect(x, vh / 2 - 140, 104, 96, 12);
+      ctx.roundRect(x, vh / 2 - 140, 96, 96, 12);
       ctx.fill();
       Utils.font(ctx, 34);
-      ctx.fillText(it[0], x + 52, vh / 2 - 105);
+      ctx.fillText(it[0], x + 48, vh / 2 - 105);
       Utils.font(ctx, 24);
       ctx.fillStyle = '#fff';
-      ctx.fillText(String(it[2]), x + 52, vh / 2 - 62);
+      ctx.fillText(String(it[2]), x + 48, vh / 2 - 62);
     });
     const tips = [
       'Chop trees for wood 🪵 — feed the campfire at night!',
@@ -467,7 +467,7 @@ const UI = (() => {
     ctx.fillText(shop.title, vw / 2, vh / 2 - h / 2 + 46);
     Utils.font(ctx, 18);
     ctx.fillStyle = '#cfd8dc';
-    ctx.fillText(`You have:   🪵 ${G.inv.wood}    🍒 ${G.inv.food}    🪶 ${G.inv.feathers}    🪙 ${G.inv.coins}    💎 ${G.inv.gems}`, vw / 2, vh / 2 - h / 2 + 82);
+    ctx.fillText(`You have:   🪵 ${G.inv.wood}    🍒 ${G.inv.food}    🪶 ${G.inv.feathers}    🐾 ${G.inv.pelt || 0}    🪙 ${G.inv.coins}    💎 ${G.inv.gems}`, vw / 2, vh / 2 - h / 2 + 82);
     shop.items.forEach((item, i) => {
       const y = vh / 2 - h / 2 + 130 + i * 78;
       ctx.fillStyle = 'rgba(255,255,255,0.07)';

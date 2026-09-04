@@ -51,6 +51,7 @@ const World = (() => {
       { x: CFG.CAMP.x - 45, y: CFG.CAMP.y - 82, a: 1.2 },
     ];
     G.props.featherTrader = { x: 2330, y: 2080 };
+    G.props.peltTrader = { x: CFG.CAMP.x - 265, y: CFG.CAMP.y - 35 };
     G.props.pond = { x: 980, y: 2620, rx: 155, ry: 100 };
     Monsters.spawn('frogK', G.props.pond.x + 70, G.props.pond.y - 50, { anchor: { x: G.props.pond.x, y: G.props.pond.y } });
 
@@ -59,6 +60,7 @@ const World = (() => {
       for (const c of G.caves) if (Utils.dist(x, y, c.x, c.y) < 195) return true;
       if (Utils.dist(x, y, G.props.pond.x, G.props.pond.y) < 210) return true;
       if (Utils.dist(x, y, G.props.featherTrader.x, G.props.featherTrader.y) < 115) return true;
+      if (Utils.dist(x, y, G.props.peltTrader.x, G.props.peltTrader.y) < 115) return true;
       if (Utils.dist(x, y, G.props.board.x, G.props.board.y) < 65) return true;
       if (Utils.dist(x, y, G.props.tent.x, G.props.tent.y) < 115) return true;
       return false;
@@ -226,9 +228,23 @@ const World = (() => {
     push(G.props.board.x, G.props.board.y, 15);
     push(G.props.tent.x, G.props.tent.y, 58);
     push(G.props.featherTrader.x, G.props.featherTrader.y, 26);
+    push(G.props.peltTrader.x, G.props.peltTrader.y, 26);
     push(CFG.CAMP.x, CFG.CAMP.y, 24);
     x = Utils.clamp(x, 30, CFG.W - 30);
     y = Utils.clamp(y, 30, CFG.H - 30);
+    return { x, y };
+  }
+
+  function keepOut(x, y, r) {
+    if (!fireLit()) return { x, y };
+    const sr = safeRadius();
+    if (sr <= 0) return { x, y };
+    const d = Utils.dist(x, y, CFG.CAMP.x, CFG.CAMP.y);
+    const minD = sr + r;
+    if (d < minD && d > 0.01) {
+      const a = Utils.ang(CFG.CAMP.x, CFG.CAMP.y, x, y);
+      return { x: CFG.CAMP.x + Math.cos(a) * minD, y: CFG.CAMP.y + Math.sin(a) * minD };
+    }
     return { x, y };
   }
 
@@ -730,6 +746,7 @@ const World = (() => {
     }
     drawBoard(ctx);
     drawStall(ctx, G.props.featherTrader, '🪶', '#8d6e63', '#d7ccc8');
+    drawStall(ctx, G.props.peltTrader, '🐾', '#6d4c33', '#a1887f');
     if (G.salesman) drawStall(ctx, G.salesman, '💼', '#455a64', '#cfd8dc');
     drawFire(ctx);
   }
@@ -786,5 +803,5 @@ const World = (() => {
     }
   }
 
-  return { biomeAt, build, update, onNewDay, drawGround, drawProps, drawCageFronts, drawAmbient, collide, fireLit, fireMax, updateFire, feedFire, tryUpgradeFire, dropPickup };
+  return { biomeAt, build, update, onNewDay, drawGround, drawProps, drawCageFronts, drawAmbient, collide, keepOut, fireLit, fireMax, updateFire, feedFire, tryUpgradeFire, dropPickup };
 })();

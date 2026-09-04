@@ -180,7 +180,7 @@ function update(dt) {
     NPCs.onNewDay();
     UI.banner('Day ' + G.day + ' ☀️', G.day >= 95 ? 'Night 99 is coming — hurry!!' : '');
   }
-  G.player.hunger -= CFG.HUNGER.drain * dt;
+  G.player.hunger -= CFG.HUNGER.drain * (G.blanket ? 0.6 : 1) * dt;
   if (G.player.hunger <= 0) {
     if (CFG.KID_MODE) {
       G.player.hunger = 1;
@@ -268,7 +268,7 @@ function render() {
   ctx.translate(-Math.round(G.cam.x) + shx, -Math.round(G.cam.y) + shy);
   World.drawGround(ctx);
   World.drawProps(ctx);
-  const ems = { wood: '🪵', food: '🍒', coin: '🪙', gem: '💎', feather: '🪶' };
+  const ems = { wood: '🪵', food: '🍒', coin: '🪙', gem: '💎', feather: '🪶', pelt: '🐾' };
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   for (const pk of G.pickups) {
@@ -304,7 +304,10 @@ function render() {
     lctx.fillRect(0, 0, vw, vh);
     lctx.globalCompositeOperation = 'destination-out';
     punch(lctx, CFG.CAMP.x, CFG.CAMP.y - 10, lightRadius(), shx, shy);
-    punch(lctx, G.player.x, G.player.y, G.lantern ? 260 : 130, shx, shy);
+    let pr = 130;
+    if (G.torch) pr += 90;
+    if (G.lantern) pr += 130;
+    punch(lctx, G.player.x, G.player.y, pr, shx, shy);
     lctx.globalCompositeOperation = 'source-over';
     ctx.drawImage(lightC, 0, 0);
     if (World.fireLit()) {
