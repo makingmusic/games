@@ -107,7 +107,7 @@ const NPCs = (() => {
         Sfx.sfx('pickup');
         Effects.leaf(b.x, b.y - 12, '#e8607a');
         Effects.text(b.x, b.y - 26, '+1 🍒', '#f8bbd0', 16);
-        if (b.berries === 0) b.next = G.t + 75;
+        if (b.berries === 0) b.next = G.t + (CFG.KID_MODE ? 40 : 75);
         return true;
       }
     }
@@ -119,9 +119,8 @@ const NPCs = (() => {
     for (const cave of G.caves) {
       const kid = kidById(cave.kidId);
       if (!kid.rescued && Utils.dist(p.x, p.y, cave.cage.x, cave.cage.y) < 110) {
-        return cave.guards.every((g) => g.dead || g.fleeing)
-          ? 'Press E — Rescue ' + kid.name + '! ' + kid.emoji
-          : 'Defeat the guards to save ' + kid.name + '! ⚔️';
+        if (!cave.guards.every((g) => g.dead || g.fleeing)) return 'Defeat the guards to save ' + kid.name + '!';
+        return CFG.KID_MODE ? 'Walk up to free ' + kid.name + '! (auto!)' : 'Press E — Rescue ' + kid.name + '!';
       }
     }
     if (G.salesman && Utils.dist(p.x, p.y, G.salesman.x, G.salesman.y) < 110) return 'Press E — Shop the Salesman 💼';
@@ -131,11 +130,100 @@ const NPCs = (() => {
     }
     if (Utils.dist(p.x, p.y, G.props.board.x, G.props.board.y) < 120) return 'Press B — Missing kids board 🪧';
     for (const b of G.bushes) {
-      if (b.berries > 0 && Utils.dist(p.x, p.y, b.x, b.y) < 70) return 'Press E — Pick berries 🍒';
+      if (b.berries > 0 && Utils.dist(p.x, p.y, b.x, b.y) < 70) return CFG.KID_MODE ? 'Yum — cherries auto-pick!' : 'Press E — Pick berries';
     }
     return null;
   }
 
+  const HUG_LINES = [
+    'hug attack!',
+    'you are brave!',
+    'thank you!',
+    'best rescuer!',
+  ];
+
+  function sticker(id, msg) {
+    G.stats.stickers = G.stats.stickers || {};
+    if (G.stats.stickers[id]) return;
+    G.stats.stickers[id] = true;
+    UI.toast('Sticker earned: ' + msg);
+    Effects.stars(G.player.x, G.player.y - 20, 12);
+    Sfx.sfx('star');
+  }
+
+  function celebrateHome(kid) {
+    kid.home = true;
+    UI.toast(kid.name + ' is safe at camp!');
+    Effects.stars(kid.x, kid.y, 14);
+    Effects.ring(CFG.CAMP.x, CFG.CAMP.y, '#ffd54f');
+    for (let i = 0; i < 3; i++) Effects.heart(kid.x + Utils.rand(-20, 20), kid.y - 26);
+    Sfx.sfx('upgrade');
+    if (G.kids.every((k) => k.home)) {
+      UI.banner('All kids are home!', 'Now defeat the Deer to win!');
+    }
+    sticker('home_' + kid.id, kid.name + ' brought home!');
+  }
+
+  function autoPickBerries(dt) {
+    const p = G.player;
+    for (const b of G.bushes) {
+      if (b.berries <= 0) continue;
+      if (Utils.dist(p.x, p.y, b.x, b.y) < 72) {
+        b.autoT = (b.autoT || 0) + dt;
+        if (b.autoT > 0.22) {
+          b.autoT = 0;
+          b.berries--;
+          addInv('food', 1);
+          Sfx.sfx('pickup');
+          Effects.leaf(b.x, b.y - 12, '#e8607a');
+          Effects.text(b.x, b.y - 26, '+1 cherry', '#f8bbd0', 16);
+          sticker('berries', 'First snack picked!');
+          if (b.berries === 0) b.next = G.t + (CFG.KID_MODE ? 40 : 75);
+        }
+      } else {
+        b.autoT = 0;
+      }
+    }
+  }
+
+  function autoRescue() {
+    if (!CFG.KID_MODE) return;
+    const p = G.player;
+    for (const cave of G.caves) {
+      const kid = kidById(cave.kidId);
+      if (!kid || kid.rescued) continue;
+      if (!cave.guards.every((g) => g.dead || g.fleeing)) continue;
+      if (Utils.dist(p.x, p.y, cave.cage.x, cave.cage.y) < 95) {
+        rescue(kid, cave);
+        Effects.text(cave.cage.x, cave.cage.y - 40, 'Freed!', '#a5d6a7', 18);
+      }
+    }
+  }
+
+  function hugAura(dt) {
+    if (!CFG.KID_MODE) return;
+    const p = G.player;
+    G.hugCd = Math.max(0, (G.hugCd || 0) - dt);
+    if (G.hugCd > 0 || p.hp >= p.maxHp) return;
+    const near = G.kids.find((k) => k.rescued && Utils.dist(p.x, p.y, k.x, k.y) < 95);
+    if (near) {
+      G.hugCd = 15;
+      p.hp = Math.min(p.maxHp, p.hp + 1);
+      Effects.heart(p.x, p.y - 30);
+      Effects.heart(near.x, near.y - 30);
+      Effects.text(p.x, p.y - 48, near.name + ': ' + Utils.choice(HUG_LINES), '#f8bbd0', 15);
+      Sfx.sfx('eat');
+      sticker('hug', 'First hug!');
+    }
+  }
+
+  function checkStickers() {
+    if (G.stats.chopped >= 1) sticker('chop', 'First tree chopped!');
+    if (G.stats.coinsEarned >= 1) sticker('coins', 'First coins found!');
+    if (G.stats.rescued >= 1) sticker('rescue', 'First kid rescued!');
+    if (G.stats.rescued >= 4) sticker('heroes', 'All 4 kids rescued!');
+    if (G.fire.level >= 2) sticker('fire2', 'Campfire Level 2!');
+  }
   function onNewDay() {
     if (G.day === 20 && !G.salesman) {
       G.salesman = { x: CFG.CAMP.x + 165, y: CFG.CAMP.y - 55 };
@@ -146,6 +234,10 @@ const NPCs = (() => {
 
   function update(dt) {
     const p = G.player;
+    autoPickBerries(dt);
+    autoRescue();
+    hugAura(dt);
+    checkStickers();
     if (G.salesman && G.phase === 'night') {
       Effects.poof(G.salesman.x, G.salesman.y, '#cfd8dc', 8);
       G.salesman = null;
@@ -158,9 +250,8 @@ const NPCs = (() => {
         const s = homeSlot(kid);
         const d = Utils.dist(kid.x, kid.y, s.x, s.y);
         if (d < 24) {
-          kid.home = true;
           kid.fleeHome = false;
-          Effects.stars(kid.x, kid.y, 8);
+          celebrateHome(kid);
         } else {
           const a = Utils.ang(kid.x, kid.y, s.x, s.y);
           kid.x += Math.cos(a) * 280 * dt;
@@ -177,9 +268,7 @@ const NPCs = (() => {
           kid.fx = Math.cos(a) >= 0 ? 1 : -1;
         }
         if (Utils.dist(kid.x, kid.y, CFG.CAMP.x, CFG.CAMP.y) < 240) {
-          kid.home = true;
-          UI.toast(kid.name + ' is safe at camp! 🏠');
-          Effects.stars(kid.x, kid.y, 10);
+          celebrateHome(kid);
         }
       }
       prev = kid;

@@ -41,6 +41,42 @@ function lose(reason) {
   Effects.shake(10);
 }
 
+function faint(reason) {
+  if (G.over) return;
+  const p = G.player;
+  p.x = CFG.CAMP.x;
+  p.y = CFG.CAMP.y + 130;
+  p.hp = p.maxHp;
+  p.hunger = Math.max(p.hunger, 60);
+  p.iframes = 3;
+  p.poisonT = 0;
+  p.kbx = 0; p.kby = 0;
+  G.projectiles = [];
+  for (const m of G.monsters) {
+    if (m.dead || m.boss || m.guard) continue;
+    const d = Utils.dist(m.x, m.y, p.x, p.y);
+    if (d < 700) {
+      const a = Utils.ang(CFG.CAMP.x, CFG.CAMP.y, m.x, m.y);
+      m.x = Utils.clamp(m.x + Math.cos(a) * 500, 80, CFG.W - 80);
+      m.y = Utils.clamp(m.y + Math.sin(a) * 500, 80, CFG.H - 80);
+    }
+  }
+  for (const c of G.cultists) {
+    const d = Utils.dist(c.x, c.y, p.x, p.y);
+    if (d < 700) c.dead = true;
+  }
+  G.cultists = G.cultists.filter((c) => !c.dead);
+  G.fire.fuel = Math.max(G.fire.fuel, 40);
+  Sfx.sfx('lose');
+  Effects.shake(6);
+  if (reason === 'starve') {
+    addInv('food', 1);
+    UI.banner('You got dizzy... but the fire kept you safe!', 'Have a snack on us! Press F to eat.');
+  } else {
+    UI.banner('Ouch! You fainted... but woke up at camp!', 'The campfire keeps you safe. Try again!');
+  }
+}
+
 function spawnDeer() {
   const p = G.player;
   const a = Utils.rand(0, TAU);
@@ -146,9 +182,20 @@ function update(dt) {
   }
   G.player.hunger -= CFG.HUNGER.drain * dt;
   if (G.player.hunger <= 0) {
-    G.player.hunger = 0;
-    lose('starve');
-    return;
+    if (CFG.KID_MODE) {
+      G.player.hunger = 1;
+      G.player.hp -= dt * 0.25;
+      if (Math.random() < dt * 0.5) Effects.text(G.player.x, G.player.y - 36, 'Hungry...', '#ffcc80', 14);
+      if (G.player.hp <= 0) {
+        G.player.hp = 1;
+        faint('starve');
+        return;
+      }
+    } else {
+      G.player.hunger = 0;
+      lose('starve');
+      return;
+    }
   }
   World.updateFire(dt);
   World.update(dt);
@@ -305,6 +352,7 @@ const Game = {
   update,
   render,
   lose,
+  faint,
   spawnDeer,
   onDeerDefeated,
   darkness,

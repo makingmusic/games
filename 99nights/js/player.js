@@ -50,7 +50,7 @@ const Player = (() => {
       }
     }
 
-    if (p.hunger > 60 && p.hp < p.maxHp) {
+    if (p.hunger > (CFG.KID_MODE ? 30 : 60) && p.hp < p.maxHp) {
       p.regenT += dt;
       if (p.regenT >= CFG.HUNGER.regenEvery) {
         p.regenT = 0;
@@ -161,7 +161,8 @@ const Player = (() => {
     p.kby += Math.sin(a) * 260;
     if (p.hp <= 0) {
       p.hp = 0;
-      Game.lose('hurt');
+      if (CFG.KID_MODE) Game.faint('hurt');
+      else Game.lose('hurt');
     }
   }
 

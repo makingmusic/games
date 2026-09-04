@@ -1,4 +1,5 @@
 const CFG = {
+  KID_MODE: true,
   W: 3600,
   H: 3600,
   DAY_LEN: 150,
@@ -6,14 +7,14 @@ const CFG = {
   MAX_DAY: 99,
   CAMP: { x: 1800, y: 1800 },
   PLAYER: {
-    r: 16, speed: 230, hearts: 5, iframes: 1.2,
-    swingCd: 0.42, swingRange: 76, swingArc: 1.2, dmg: 1,
-    swingCdSharp: 0.34, swingRangeSharp: 88, dmgSharp: 2,
+    r: 16, speed: 230, hearts: 7, iframes: 2.0,
+    swingCd: 0.42, swingRange: 95, swingArc: 1.8, dmg: 2,
+    swingCdSharp: 0.34, swingRangeSharp: 105, dmgSharp: 3,
   },
-  HUNGER: { max: 100, drain: 0.4, food: 26, foodCooked: 44, regenEvery: 42 },
+  HUNGER: { max: 100, drain: 0.22, food: 35, foodCooked: 55, regenEvery: 12 },
   TREE: { hp: 3, wood: 3, woodSharp: 4, regrowDays: 2 },
   FIRE: {
-    feed: 25, drainDay: 0.5, drainNight: 1.1, baseMax: 100, maxPerLvl: 15, gemValue: 15,
+    feed: 40, drainDay: 0.25, drainNight: 0.6, baseMax: 100, maxPerLvl: 15, gemValue: 15,
     costs: { 2: { w: 12, c: 10 }, 3: { w: 18, c: 18 }, 4: { w: 24, c: 26 }, 5: { w: 32, c: 36 }, 6: { w: 40, c: 50 } },
   },
 };

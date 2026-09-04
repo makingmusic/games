@@ -15,7 +15,7 @@ const MKIND = {
   frogP: { hp: 6, r: 24, spd: 250, color: '#9b59b6', belly: '#b87fd4', emoji: '🐸', frog: true, aggro: 9999, touch: 1, loot: 'frog', split: ['frogB', 'frogB'] },
   frogB: { hp: 4, r: 18, spd: 260, color: '#5dade2', belly: '#85c8ef', emoji: '🐸', frog: true, aggro: 9999, touch: 1, loot: 'frog' },
   frogO: { hp: 2, r: 13, spd: 270, color: '#f39c12', belly: '#f8c471', emoji: '🐸', frog: true, aggro: 9999, touch: 1, loot: 'frogO' },
-  deer: { hp: 60, r: 56, spd: 140, color: '#4a3628', belly: '#5f4835', emoji: '🦌', boss: true, aggro: 9999, touch: 1, loot: 'deer' },
+  deer: { hp: 25, r: 56, spd: 140, color: '#4a3628', belly: '#5f4835', emoji: '🦌', boss: true, aggro: 9999, touch: 1, loot: 'deer' },
 };
 
 const Monsters = (() => {

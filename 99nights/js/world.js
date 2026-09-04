@@ -28,10 +28,10 @@ const World = (() => {
     G.monsters = []; G.cultists = []; G.projectiles = []; G.particles = []; G.texts = [];
 
     const caveDefs = [
-      { x: 560, y: 560, biome: 'snow', kidId: 'koala', guards: ['wolf', 'wolf', 'wolf', 'wolf'] },
-      { x: 3040, y: 560, biome: 'lava', kidId: 'dino', guards: ['bear', 'bear'] },
-      { x: 560, y: 3040, biome: 'jungle', kidId: 'kraken', guards: ['bear', 'bear'] },
-      { x: 3040, y: 3040, biome: 'forest', kidId: 'squid', guards: ['wolf', 'wolf', 'wolf'] },
+      { x: 560, y: 560, biome: 'snow', kidId: 'koala', guards: CFG.KID_MODE ? ['wolf', 'wolf'] : ['wolf', 'wolf', 'wolf', 'wolf'] },
+      { x: 3040, y: 560, biome: 'lava', kidId: 'dino', guards: CFG.KID_MODE ? ['bear'] : ['bear', 'bear'] },
+      { x: 560, y: 3040, biome: 'jungle', kidId: 'kraken', guards: CFG.KID_MODE ? ['bear'] : ['bear', 'bear'] },
+      { x: 3040, y: 3040, biome: 'forest', kidId: 'squid', guards: CFG.KID_MODE ? ['wolf', 'wolf'] : ['wolf', 'wolf', 'wolf'] },
     ];
     for (const cd of caveDefs) {
       const cave = { x: cd.x, y: cd.y, biome: cd.biome, kidId: cd.kidId, cage: { x: cd.x + 105, y: cd.y + 40 } };
@@ -183,7 +183,7 @@ const World = (() => {
     for (const b of G.bushes) {
       if (b.berries < 2 && G.t > b.next) {
         b.berries++;
-        b.next = G.t + 75;
+        b.next = G.t + (CFG.KID_MODE ? 40 : 75);
       }
     }
     for (const p of G.pickups) {

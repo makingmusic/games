@@ -9,11 +9,11 @@ const CTYPES = {
 
 const Projectiles = (() => {
   const PDEFS = {
-    bolt: { spd: 330, dmg: 1, color: '#d9b98a', fire: 6 },
-    bolt2: { spd: 400, dmg: 1, color: '#ff7043', fire: 9 },
-    dart: { spd: 380, dmg: 1, color: '#f5f0e0', fire: 4 },
-    spear: { spd: 250, dmg: 1, color: '#8bc34a', poison: 3, fire: 0 },
-    spirit: { spd: 265, dmg: 1, color: '#b07ce0', fire: 0 },
+    bolt: { spd: 260, dmg: 1, color: '#d9b98a', fire: 6 },
+    bolt2: { spd: 280, dmg: 1, color: '#ff7043', fire: 9 },
+    dart: { spd: 260, dmg: 1, color: '#f5f0e0', fire: 4 },
+    spear: { spd: 200, dmg: 1, color: '#8bc34a', poison: 3, fire: 0 },
+    spirit: { spd: 220, dmg: 1, color: '#b07ce0', fire: 0 },
   };
 
   function spawn(x, y, ang, kind, from) {
@@ -257,7 +257,12 @@ const Cultists = (() => {
   function onNightfall() {
     const day = G.day;
     let waves = 0, size = 2;
-    if (day >= 40) { waves = 3; size = day > 60 ? 5 : 4; }
+    if (CFG.KID_MODE) {
+      if (day >= 40) { waves = 2; size = 3; }
+      else if (day >= 20) { waves = 2; size = 2; }
+      else if (day >= 12) { waves = 1; size = 2; }
+      else if (day >= 8) { waves = 1; size = 2; }
+    } else if (day >= 40) { waves = 3; size = day > 60 ? 5 : 4; }
     else if (day >= 20) { waves = 2; size = 4; }
     else if (day >= 12) { waves = 2; size = 3; }
     else if (day >= 6) { waves = 1; size = 3; }
