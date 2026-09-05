@@ -270,10 +270,20 @@ var G = globalThis.G || (globalThis.G = {});
         // wolves circle a bit instead of beelining (nips, not mauls)
         let ax = Math.cos(a), ay = Math.sin(a);
         if (isWolf) { const w = Math.sin(an.t * 2.2) * 0.55; ax += -Math.sin(a) * w; ay += Math.cos(a) * w; }
+        // a lit campfire keeps night wolves at the edge of its glow (§13)
+        if (isWolf && st.phase === 'night' && st.fire.level >= 2) {
+          const fr = 4.5 * c.TILE;
+          const dFire = U.dist(an.x, an.y, st.fire.x, st.fire.y);
+          if (dFire < fr) {
+            const away = U.angleTo(st.fire.x, st.fire.y, an.x, an.y);
+            ax += Math.cos(away) * 1.6; ay += Math.sin(away) * 1.6;
+            const m = Math.hypot(ax, ay) || 1; ax /= m; ay /= m;
+          }
+        }
         collide(st, an, ax * sp * dt, ay * sp * dt);
         an.walk += dt * 9;
         if (d < def.r + 16 && an.atkT <= 0 && def.dmg > 0) {
-          an.atkT = 1.2;
+          an.atkT = 1.5;
           G.damagePlayer(st, def.dmg, an.x, an.y, 'BONK!');
         }
       } else {

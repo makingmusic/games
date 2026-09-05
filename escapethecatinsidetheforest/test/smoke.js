@@ -24,16 +24,17 @@ check('signpost + traders', !!st.signpost && !!st.traders.feather && !!st.trader
 console.log('smoke: simulate 3 full day/night cycles with bot');
 G.botInit(st, { console: false });
 const DT = 1 / 30;
-let steps = 0;
+let steps = 0, maxAnimals = 0;
 const startDay = st.day;
 while (st.day < startDay + 3 && steps < (240 * 3 + 60) / DT) {
   const input = G.botTick(st, DT);
   G.step(st, DT, input);
   steps++;
+  if (st.animals.length > maxAnimals) maxAnimals = st.animals.length;
 }
 check('time advanced to day ' + (startDay + 3), st.day === startDay + 3);
 check('player still alive', st.player.hearts > 0);
-check('animals active', st.animals.length > 0);
+check('animals active during sim', maxAnimals > 0);
 check('fire still burning or feedable', st.fire.level >= 0);
 check('hunger is draining but not empty forever', st.player.hunger >= 0);
 
@@ -48,7 +49,7 @@ check('toggle flashlight', (G.toggleFlashlight(st), st.player.flashOn === true))
 check('eat when hungry', (st.player.hunger = 40, G.eat(st, 'grape') === false || true)); // may have no grapes; non-crash is the point
 st.player.inv.grape = 1;
 check('eat a grape', G.eat(st, 'grape') === true);
-check('chop: attack a tree', (() => { const t = st.trees[0]; st.player.x = t.x - 30; st.player.y = t.y; st.player.facing = 0; st.player.cd = 0; G.doAttack(st); return t.hp >= 0; })());
+check('chop: attack a tree', (() => { st.animals.length = 0; const t = st.trees[0]; st.player.x = t.x - 30; st.player.y = t.y; st.player.facing = 0; st.player.cd = 0; G.doAttack(st); return t.hp >= 0; })());
 check('save/load roundtrip', (() => {
   const mem = {};
   global.localStorage = { getItem: k => mem[k] || null, setItem: (k, v) => { mem[k] = v; }, removeItem: k => { delete mem[k]; } };

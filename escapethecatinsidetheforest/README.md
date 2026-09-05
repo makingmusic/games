@@ -60,6 +60,8 @@ The game auto-saves at every dawn, on pause and when you switch tabs.
 
 - `index.html?fast=1` — 10× time scale for testing.
 - `index.html?bot=1` — an auto-player plays the game (log panel on the right).
+- `index.html?catdebug=1` — teleport the Cat in front of you and preview each
+  pose (sleep / prowl / stalk / shooed).
 
 ## Tests
 
@@ -78,64 +80,64 @@ past Night 85.
 ```
 === Balance proof: 3 Story-Mode bot runs (survive 85 nights) ===
 
---- RUN 1 (seed 12345) — WIN in 13571ms ---
-  day reached: 86, phase: day, defeats: 33, kids: 4/4
-  hearts: 5.0, hunger: 72, weapon: strong, coat: true
-  stats: {"catsShooed":0,"animalsBonked":593,"diamonds":116,"maxFire":6,"bonks":2328}
+--- RUN 1 (seed 12345) — WIN in 13391ms ---
+  day reached: 86, phase: day, defeats: 15, kids: 4/4
+  hearts: 5.0, hunger: 76, weapon: strong, coat: true
+  stats: {"catsShooed":2,"animalsBonked":558,"diamonds":132,"maxFire":6,"bonks":2506}
   log (every 10 nights):
-    [Day 1 night] Night 1/85 — hearts 5.0, hunger 89, fire 5.9, wood 10, pelts 0, food 7, kids 0/4, flash none, defeats 0
-    [Day 2 night] Night 2/85 — hearts 5.0, hunger 87, fire 6.0, wood 7, pelts 0, food 9, kids 0/4, flash none, defeats 0
-    [Day 3 night] Night 3/85 — hearts 5.0, hunger 86, fire 5.9, wood 10, pelts 0, food 5, kids 0/4, flash none, defeats 0
-    [Day 10 night] Night 10/85 — hearts 4.8, hunger 98, fire 0.0, wood 10, pelts 0, food 4, kids 4/4, flash 100, ice, defeats 20
-    [Day 20 night] Night 20/85 — hearts 5.0, hunger 71, fire 5.9, wood 10, pelts 2, food 13, kids 4/4, flash 100, strong, defeats 22
-    [Day 30 night] Night 30/85 — hearts 2.6, hunger 70, fire 6.0, wood 7, pelts 15, food 8, kids 4/4, flash 100, strong, defeats 25
-    [Day 40 night] Night 40/85 — hearts 5.0, hunger 77, fire 5.7, wood 10, pelts 35, food 16, kids 4/4, flash 100, strong, defeats 31
-    [Day 50 night] Night 50/85 — hearts 5.0, hunger 85, fire 5.8, wood 10, pelts 53, food 12, kids 4/4, flash 100, strong, defeats 32
-    [Day 60 night] Night 60/85 — hearts 5.0, hunger 89, fire 5.9, wood 7, pelts 70, food 29, kids 4/4, flash 100, strong, defeats 32
-    [Day 70 night] Night 70/85 — hearts 5.0, hunger 83, fire 5.7, wood 10, pelts 81, food 41, kids 4/4, flash 100, strong, defeats 32
-    [Day 80 night] Night 80/85 — hearts 4.5, hunger 95, fire 5.8, wood 7, pelts 106, food 34, kids 4/4, flash 100, strong, defeats 33
+    [Day 1 night] Night 1/85 — hearts 5.0, hunger 89, fire 5.9, wood 7, pelts 0, food 7, kids 0/4, flash none, defeats 0
+    [Day 2 night] Night 2/85 — hearts 5.0, hunger 87, fire 5.7, wood 7, pelts 0, food 3, kids 0/4, flash none, defeats 0
+    [Day 3 night] Night 3/85 — hearts 5.0, hunger 71, fire 3.0, wood 7, pelts 0, food 0, kids 0/4, flash none, defeats 0
+    [Day 10 night] Night 10/85 — hearts 5.0, hunger 14, fire 3.9, wood 1, pelts 0, food 0, kids 0/4, flash none, defeats 0
+    [Day 20 night] Night 20/85 — hearts 5.0, hunger 86, fire 5.9, wood 7, pelts 1, food 11, kids 4/4, flash 100, ice, defeats 7
+    [Day 30 night] Night 30/85 — hearts 5.0, hunger 95, fire 6.0, wood 7, pelts 7, food 7, kids 4/4, flash 100, strong, defeats 8
+    [Day 40 night] Night 40/85 — hearts 5.0, hunger 91, fire 5.9, wood 7, pelts 19, food 14, kids 4/4, flash 100, strong, defeats 11
+    [Day 50 night] Night 50/85 — hearts 5.0, hunger 92, fire 5.8, wood 10, pelts 35, food 20, kids 4/4, flash 100, strong, defeats 12
+    [Day 60 night] Night 60/85 — hearts 5.0, hunger 93, fire 5.8, wood 10, pelts 50, food 16, kids 4/4, flash 100, strong, defeats 14
+    [Day 70 night] Night 70/85 — hearts 5.0, hunger 70, fire 6.0, wood 7, pelts 63, food 27, kids 4/4, flash 100, strong, defeats 15
+    [Day 80 night] Night 80/85 — hearts 5.0, hunger 94, fire 5.9, wood 7, pelts 82, food 41, kids 4/4, flash 100, strong, defeats 15
 
---- RUN 2 (seed 20264) — WIN in 13208ms ---
-  day reached: 86, phase: day, defeats: 13, kids: 4/4
-  hearts: 5.0, hunger: 73, weapon: strong, coat: true
-  stats: {"catsShooed":0,"animalsBonked":576,"diamonds":132,"maxFire":6,"bonks":2159}
-  log (every 10 nights):
-    [Day 1 night] Night 1/85 — hearts 2.1, hunger 89, fire 6.0, wood 7, pelts 0, food 9, kids 0/4, flash none, defeats 0
-    [Day 2 night] Night 2/85 — hearts 5.0, hunger 87, fire 5.9, wood 7, pelts 0, food 5, kids 0/4, flash none, defeats 0
-    [Day 3 night] Night 3/85 — hearts 1.6, hunger 86, fire 5.8, wood 7, pelts 0, food 7, kids 0/4, flash none, defeats 0
-    [Day 10 night] Night 10/85 — hearts 3.0, hunger 5, fire 1.3, wood 6, pelts 2, food 0, kids 2/4, flash 100, defeats 3
-    [Day 20 night] Night 20/85 — hearts 5.0, hunger 75, fire 5.8, wood 10, pelts 5, food 6, kids 4/4, flash 100, ice, defeats 9
-    [Day 30 night] Night 30/85 — hearts 5.0, hunger 94, fire 5.8, wood 10, pelts 10, food 18, kids 4/4, flash 100, strong, defeats 9
-    [Day 40 night] Night 40/85 — hearts 5.0, hunger 88, fire 1.4, wood 10, pelts 62, food 18, kids 4/4, flash 100, strong, defeats 9
-    [Day 50 night] Night 50/85 — hearts 5.0, hunger 98, fire 5.8, wood 7, pelts 101, food 17, kids 4/4, flash 100, strong, defeats 11
-    [Day 60 night] Night 60/85 — hearts 5.0, hunger 97, fire 5.7, wood 10, pelts 117, food 25, kids 4/4, flash 100, strong, defeats 12
-    [Day 70 night] Night 70/85 — hearts 4.5, hunger 97, fire 6.0, wood 7, pelts 132, food 17, kids 4/4, flash 100, strong, defeats 13
-    [Day 80 night] Night 80/85 — hearts 5.0, hunger 91, fire 5.6, wood 10, pelts 144, food 41, kids 4/4, flash 100, strong, defeats 13
-
---- RUN 3 (seed 28183) — WIN in 13716ms ---
-  day reached: 86, phase: day, defeats: 52, kids: 4/4
+--- RUN 2 (seed 20264) — WIN in 13638ms ---
+  day reached: 86, phase: day, defeats: 9, kids: 4/4
   hearts: 5.0, hunger: 94, weapon: strong, coat: true
-  stats: {"catsShooed":3,"animalsBonked":630,"diamonds":18,"maxFire":6,"bonks":2435}
+  stats: {"catsShooed":2,"animalsBonked":594,"diamonds":62,"maxFire":6,"bonks":2576}
   log (every 10 nights):
-    [Day 1 night] Night 1/85 — hearts 5.0, hunger 89, fire 6.0, wood 7, pelts 1, food 8, kids 0/4, flash none, defeats 0
-    [Day 2 night] Night 2/85 — hearts 5.0, hunger 87, fire 5.9, wood 10, pelts 1, food 5, kids 0/4, flash none, defeats 0
-    [Day 3 night] Night 3/85 — hearts 3.6, hunger 71, fire 5.9, wood 7, pelts 1, food 5, kids 0/4, flash none, defeats 0
-    [Day 10 night] Night 10/85 — hearts 5.0, hunger 98, fire 6.0, wood 7, pelts 0, food 4, kids 4/4, flash 100, ice, defeats 5
-    [Day 20 night] Night 20/85 — hearts 4.2, hunger 81, fire 5.9, wood 7, pelts 4, food 8, kids 4/4, flash 100, ice, defeats 6
-    [Day 30 night] Night 30/85 — hearts 5.0, hunger 88, fire 5.7, wood 10, pelts 16, food 18, kids 4/4, flash 100, strong, defeats 8
-    [Day 40 night] Night 40/85 — hearts 4.8, hunger 74, fire 5.9, wood 7, pelts 36, food 25, kids 4/4, flash 100, strong, defeats 9
-    [Day 50 night] Night 50/85 — hearts 5.0, hunger 98, fire 5.7, wood 10, pelts 63, food 42, kids 4/4, flash 100, strong, defeats 9
-    [Day 60 night] Night 60/85 — hearts 5.0, hunger 74, fire 5.6, wood 10, pelts 81, food 20, kids 4/4, flash 100, strong, defeats 15
-    [Day 70 night] Night 70/85 — hearts 5.0, hunger 98, fire 5.7, wood 10, pelts 96, food 36, kids 4/4, flash 100, strong, defeats 15
-    [Day 80 night] Night 80/85 — hearts 4.8, hunger 81, fire 5.9, wood 7, pelts 109, food 37, kids 4/4, flash 100, strong, defeats 16
+    [Day 1 night] Night 1/85 — hearts 5.0, hunger 89, fire 6.0, wood 7, pelts 0, food 7, kids 0/4, flash none, defeats 0
+    [Day 2 night] Night 2/85 — hearts 5.0, hunger 87, fire 5.8, wood 10, pelts 0, food 5, kids 0/4, flash none, defeats 0
+    [Day 3 night] Night 3/85 — hearts 3.1, hunger 86, fire 6.0, wood 7, pelts 0, food 7, kids 0/4, flash none, defeats 0
+    [Day 10 night] Night 10/85 — hearts 0.9, hunger 79, fire 5.7, wood 10, pelts 2, food 7, kids 0/4, flash none, defeats 0
+    [Day 20 night] Night 20/85 — hearts 5.0, hunger 76, fire 5.9, wood 7, pelts 1, food 5, kids 4/4, flash 100, strong, defeats 3
+    [Day 30 night] Night 30/85 — hearts 5.0, hunger 85, fire 1.4, wood 10, pelts 26, food 7, kids 4/4, flash 100, strong, defeats 3
+    [Day 40 night] Night 40/85 — hearts 5.0, hunger 79, fire 5.9, wood 7, pelts 54, food 34, kids 4/4, flash 100, strong, defeats 3
+    [Day 50 night] Night 50/85 — hearts 5.0, hunger 84, fire 5.7, wood 10, pelts 67, food 32, kids 4/4, flash 100, strong, defeats 4
+    [Day 60 night] Night 60/85 — hearts 5.0, hunger 77, fire 5.8, wood 10, pelts 79, food 35, kids 4/4, flash 100, strong, defeats 5
+    [Day 70 night] Night 70/85 — hearts 4.0, hunger 75, fire 5.8, wood 7, pelts 93, food 38, kids 4/4, flash 100, strong, defeats 6
+    [Day 80 night] Night 80/85 — hearts 5.0, hunger 88, fire 5.7, wood 10, pelts 109, food 10, kids 4/4, flash 100, strong, defeats 9
+
+--- RUN 3 (seed 28183) — WIN in 13340ms ---
+  day reached: 86, phase: day, defeats: 18, kids: 4/4
+  hearts: 5.0, hunger: 94, weapon: strong, coat: true
+  stats: {"catsShooed":8,"animalsBonked":511,"diamonds":90,"maxFire":6,"bonks":2428}
+  log (every 10 nights):
+    [Day 1 night] Night 1/85 — hearts 5.0, hunger 89, fire 6.0, wood 7, pelts 0, food 7, kids 0/4, flash none, defeats 0
+    [Day 2 night] Night 2/85 — hearts 4.5, hunger 87, fire 5.9, wood 7, pelts 0, food 6, kids 0/4, flash none, defeats 0
+    [Day 3 night] Night 3/85 — hearts 5.0, hunger 71, fire 3.8, wood 7, pelts 0, food 3, kids 0/4, flash none, defeats 0
+    [Day 10 night] Night 10/85 — hearts 5.0, hunger 83, fire 5.0, wood 7, pelts 1, food 3, kids 0/4, flash none, defeats 2
+    [Day 20 night] Night 20/85 — hearts 5.0, hunger 83, fire 0.0, wood 19, pelts 3, food 1, kids 3/4, flash 100, ice, defeats 13
+    [Day 30 night] Night 30/85 — hearts 4.8, hunger 79, fire 5.8, wood 10, pelts 4, food 9, kids 4/4, flash 100, ice, defeats 15
+    [Day 40 night] Night 40/85 — hearts 3.0, hunger 98, fire 5.8, wood 7, pelts 26, food 19, kids 4/4, flash 100, strong, defeats 15
+    [Day 50 night] Night 50/85 — hearts 5.0, hunger 93, fire 5.7, wood 10, pelts 40, food 32, kids 4/4, flash 100, strong, defeats 15
+    [Day 60 night] Night 60/85 — hearts 5.0, hunger 99, fire 6.0, wood 7, pelts 59, food 29, kids 4/4, flash 100, strong, defeats 16
+    [Day 70 night] Night 70/85 — hearts 5.0, hunger 93, fire 5.9, wood 7, pelts 69, food 40, kids 4/4, flash 100, strong, defeats 16
+    [Day 80 night] Night 80/85 — hearts 5.0, hunger 87, fire 5.7, wood 10, pelts 89, food 65, kids 4/4, flash 100, strong, defeats 16
 
 === RESULT: 3/3 bots survived past Night 85 ===
 ```
 
 Reading the numbers: a moderately skilled path through the game (the bot's)
 rescues all four kids by around day 10–20, keeps fire/food healthy, and
-absorbs the occasional Story-Mode setback (13–52 "got so sleepy" mornings over
-85 nights, roughly one every 2–6 days). A human child playing more
+absorbs the occasional Story-Mode setback (9–18 "got so sleepy" mornings over
+85 nights, roughly one every 5–9 days). A human child playing more
 cautiously (staying near camp at night) will see fewer.
 
 ## Tuning
@@ -159,6 +161,8 @@ src/bot.js       auto-player used for the balance proof
 src/sprites.js   procedural cartoon rendering + night darkness
 src/ui.js        HUD, panels, banners, audio synth
 src/main.js      boot, game loop, input (touch + keyboard), ?fast/?bot
-assets/cat.png   the designer's Cat drawing, optimized (74 KB from 2 MB)
+assets/cat.png         the Cat (idle / scare pose), the designer's plush, cut out
+assets/cat-sleep.png   sleeping pose (same plush)
+assets/cat-shoo.png    covering-head pose (flashlight)
 docs/            the designer's original spec + drawing (do not modify)
 ```

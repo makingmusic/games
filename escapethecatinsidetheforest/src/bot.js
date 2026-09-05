@@ -83,6 +83,11 @@ var G = globalThis.G || (globalThis.G = {});
     }
     if (st.phase === 'day') b.loggedNight = false;
 
+    // ---- fresh defeat? drop everything and go home to heal (anti death-spiral)
+    if (p.hurtT > 1.5 && b.plan !== 'home' && b.plan !== 'trade') {
+      b.plan = 'home'; b.phase = 'go'; b.target = null; b.wp = null;
+    }
+
     // ---- survival basics first: keep the tummy happy, bank supper for the night
     if (p.hunger < 70) {
       const order = ['grape', 'morsel', 'bfoot', 'steak', 'csteak'];
@@ -244,8 +249,8 @@ var G = globalThis.G || (globalThis.G = {});
         if (prey) { b.plan = 'hunt'; b.phase = 'go'; b.target = prey; return input; }
       }
 
-      // 2. rescue a kid once geared up (flashlight + some charge or fuel)
-      if (p.hasFlashlight && kidsLeft.length && (p.flashCharge > 55 || p.inv.battery > 0 || p.inv.fuel > 0)) {
+      // 2. rescue a kid once geared up and healthy (flashlight + charge + full-ish hearts)
+      if (p.hasFlashlight && kidsLeft.length && p.hearts >= 4 && (p.flashCharge > 55 || p.inv.battery > 0 || p.inv.fuel > 0)) {
         // charge flashlight from fuel/batteries before a trip if very low
         if (p.flashCharge < 25) {
           if (p.inv.battery > 0) { p.inv.battery--; p.flashCharge = Math.min(c.FLASH_CHARGE_MAX, p.flashCharge + c.BATTERY_CHARGE); }

@@ -6,6 +6,9 @@ body {
   background: #16211a; touch-action: none; user-select: none; -webkit-user-select: none;
   position: fixed; inset: 0;
 }
+button, a, .slot, .screen, .tbtn, .bigbtn, .abtn, .uibtn, .closeBtn {
+  touch-action: manipulation; cursor: pointer;
+}
 #game { position: fixed; inset: 0; }
 #cv { position: absolute; inset: 0; display: block; }
 .hidden { display: none !important; }
@@ -112,19 +115,38 @@ body {
 }
 @media (orientation: portrait) { #rotatehint { display: block; } }
 
+/* ---------------- cat face calibration (?catdebug=1) ---------------- */
+#catdebug {
+  position: absolute; top: 70px; left: 10px; z-index: 40; pointer-events: auto;
+  background: rgba(10,16,12,.88); border: 2px solid #7bc950; border-radius: 12px;
+  padding: 8px; color: #e8ecf4; font-size: 12px; max-width: 300px;
+}
+#catdebug b { display: block; margin-bottom: 6px; color: #ffe9a8; }
+#catdebug .cdGrid { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+#catdebug button {
+  font-family: inherit; font-size: 11px; padding: 5px 8px; border: none;
+  border-radius: 8px; background: #3f5844; color: #fff;
+}
+#catdebug button:active { background: #7bc950; }
+#catdebug .cdRow { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+#catdebug pre {
+  background: rgba(0,0,0,.4); padding: 6px; border-radius: 8px; font-size: 10px;
+  white-space: pre-wrap; user-select: text; -webkit-user-select: text;
+}
+
 /* ---------------- screens ---------------- */
 .screen {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   background: rgba(10, 16, 24, .82); z-index: 10;
 }
-#splash { background: #10192b; }
+#splash { background: #10192b; cursor: pointer; }
 .splashbox { text-align: center; padding: 40px; }
 .trueline { font-size: 26px; color: #e8ecf4; line-height: 1.6; font-style: italic; }
 .tapline { margin-top: 60px; font-size: 18px; color: #7d8aa5; animation: pulse 1.6s infinite; }
 @keyframes pulse { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
 
 .titlebox { text-align: center; padding: 20px; max-width: 560px; }
-#titleCat { height: 150px; margin-bottom: 8px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.5)); }
+#titleCat { height: 150px; margin-bottom: 8px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.5)); object-fit: contain; }
 .titlebox h1 { color: #ffe9a8; font-size: 34px; line-height: 1.15; text-shadow: 0 4px 0 rgba(0,0,0,.5); margin-bottom: 18px; }
 .bigbtn {
   display: block; width: 100%; margin: 8px auto; padding: 14px; font-family: inherit;
@@ -171,7 +193,7 @@ body {
 .cico { font-size: 34px; }
 
 .catface { text-align: center; }
-.catface img { height: 140px; }
+.catface img { height: 140px; object-fit: contain; }
 .mustache { color: #b7c2cd; font-size: 14px; margin: 6px 0; }
 .stats { text-align: left; display: inline-block; margin: 10px 0; color: #e8ecf4; font-size: 16px; line-height: 1.8; }
 .kite { font-size: 60px; animation: fly 3s ease-in-out infinite; display: inline-block; }

@@ -11,6 +11,23 @@ var G = globalThis.G || (globalThis.G = {});
   };
   G.ui = ui;
 
+  // iPad Safari never fires a synthetic click if some touchstart listener
+  // called preventDefault (the document joystick handler used to do that on
+  // the whole #game tree). Bind touchend + click, and ignore the ghost click.
+  G.onTap = function (el, fn) {
+    if (!el) return;
+    let last = 0;
+    const run = (e) => {
+      if (e && e.cancelable) e.preventDefault();
+      const now = performance.now();
+      if (now - last < 400) return;
+      last = now;
+      fn(e);
+    };
+    el.addEventListener('touchend', run, { passive: false });
+    el.addEventListener('click', run);
+  };
+
   // ------------------------------------------------------------------ audio (WebAudio synth, gentle)
   let AC = null;
   ui.muted = false;
@@ -88,7 +105,7 @@ var G = globalThis.G || (globalThis.G = {});
     ui.overlayOpen = false;
     $('hud').classList.remove('hidden');
     buildHotbar();
-    updateHUD(st);
+    ui.updateHUD(st);
   };
 
   // ------------------------------------------------------------------ panels (pause the sim while open — kind to kids)
@@ -129,7 +146,7 @@ var G = globalThis.G || (globalThis.G = {});
       <p class="hint">You have: 🧶 ${p.inv.fur} fur • 🟫 ${p.inv.pelt} pelts • 💎 ${p.inv.diamond} diamonds</p>
       ${rows}
       <button class="closeBtn" onclick="G.ui.closePanel()">Bye bye!</button>`);
-    $('panel').querySelectorAll('.tbtn').forEach(b => b.addEventListener('click', () => {
+    $('panel').querySelectorAll('.tbtn').forEach(b => G.onTap(b, () => {
       const act = b.dataset.act;
       if (act === 'fuelFur') G.trade(st, 'feather', 'fuel', 'fur');
       else if (act === 'fuelDia') G.trade(st, 'feather', 'fuelD', 'diamond');
@@ -176,8 +193,8 @@ var G = globalThis.G || (globalThis.G = {});
         <button class="tbtn" id="addFuel" ${p.inv.fuel > 0 && lvl < 6 ? '' : 'disabled'}>Add!</button></div>
       <p class="hint">A level ${c.COOK_FIRE_LEVEL}+ fire cooks steaks automatically. Level 6 = COZY! ❤️</p>
       <button class="closeBtn" onclick="G.ui.closePanel()">Done!</button>`);
-    $('addWood').addEventListener('click', () => { G.addFuelToFire(st, 'wood') && G.openFireMenu(); });
-    $('addFuel').addEventListener('click', () => { G.addFuelToFire(st, 'fuel') && G.openFireMenu(); });
+    G.onTap($('addWood'), () => { G.addFuelToFire(st, 'wood') && G.openFireMenu(); });
+    G.onTap($('addFuel'), () => { G.addFuelToFire(st, 'fuel') && G.openFireMenu(); });
   };
 
   // ---- craft panel (§13)
@@ -198,10 +215,10 @@ var G = globalThis.G || (globalThis.G = {});
       <div class="trow"><div class="ticon">🕯️</div><div class="tinfo"><b>Light a Torch</b><span>warm + bright for ${c.TORCH_T}s (you have ${p.inv.torch})</span></div>
         <button class="tbtn" id="useTorch" ${p.inv.torch > 0 && p.torchT <= 0 ? '' : 'disabled'}>Light!</button></div>
       <button class="closeBtn" onclick="G.ui.closePanel()">Done!</button>`);
-    $('panel').querySelectorAll('[data-craft]').forEach(b => b.addEventListener('click', () => {
+    $('panel').querySelectorAll('[data-craft]').forEach(b => G.onTap(b, () => {
       if (G.craft(st, b.dataset.craft)) G.openCraft();
     }));
-    $('useTorch').addEventListener('click', () => { G.useTorch(st); G.openCraft(); });
+    G.onTap($('useTorch'), () => { G.useTorch(st); G.openCraft(); });
   };
 
   // ---- gathering confirm (§15)
@@ -213,7 +230,7 @@ var G = globalThis.G || (globalThis.G = {});
       No need to worry — the Cat never comes to the party.</p>
       <button class="bigbtn" id="pourBtn">Pour the brews!</button>
       <button class="closeBtn" onclick="G.ui.closePanel()">Not yet</button>`);
-    $('pourBtn').addEventListener('click', () => {
+    G.onTap($('pourBtn'), () => {
       G.startGathering(G.state);
       ui.closePanel();
     });
@@ -243,7 +260,7 @@ var G = globalThis.G || (globalThis.G = {});
     const story = mode === 'story';
     el.innerHTML = `
       <div class="panelBox">
-        <div class="catface">${G.catImg ? '<img src="assets/cat.png" alt="the Cat" />' : '🐱'}</div>
+        <div class="catface"><img src="assets/cat.png" alt="the Cat"></div>
         <p class="mustache">the Cat drew a moustache on you . . .</p>
         <h2>${story ? 'You got so sleepy! You woke up back at camp.' : "Let's try again from the start!"}</h2>
         ${story ? `<p class="hint">You dropped some snacks and diamonds in a backpack — go find it!</p>` : `<p class="hint">True Story Mode: everything starts over. Very Hard!</p>`}
@@ -251,7 +268,7 @@ var G = globalThis.G || (globalThis.G = {});
       </div>`;
     el.classList.remove('hidden');
     ui.overlayOpen = true;
-    $('defOk').addEventListener('click', () => {
+    G.onTap($('defOk'), () => {
       el.classList.add('hidden');
       ui.overlayOpen = false;
       if (!story) {
@@ -282,7 +299,7 @@ var G = globalThis.G || (globalThis.G = {});
       </div>`;
     el.classList.remove('hidden');
     ui.overlayOpen = true;
-    $('winOk').addEventListener('click', () => {
+    G.onTap($('winOk'), () => {
       el.classList.add('hidden');
       ui.overlayOpen = false;
       ui.showTitle();
@@ -311,7 +328,7 @@ var G = globalThis.G || (globalThis.G = {});
     el.innerHTML = HOTBAR_ITEMS.map(([id, icon]) =>
       `<div class="slot" data-item="${id}"><span class="sicon">${icon}</span><span class="scount" id="cnt-${id}">0</span></div>`
     ).join('');
-    el.querySelectorAll('.slot').forEach(s => s.addEventListener('click', () => {
+    el.querySelectorAll('.slot').forEach(s => G.onTap(s, () => {
       const id = s.dataset.item;
       const st = G.state; if (!st || ui.overlayOpen) return;
       if (EDIBLE.has(id)) G.eat(st, id);

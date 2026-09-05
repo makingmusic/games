@@ -258,9 +258,16 @@ var G = globalThis.G || (globalThis.G = {});
     ctx.fillText('pelts → gear', x, y + 22);
   }
 
+  function actorShadow(ctx, x, y, rx, ry) {
+    ctx.fillStyle = 'rgba(20,26,20,.24)';
+    ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, 7); ctx.fill();
+  }
+  G.actorShadow = actorShadow;
+
   // ---------------------------------------------------------------- actors
   G.drawKid = function (ctx, x, y, id, t, walking) {
     const bob = walking ? Math.abs(Math.sin(t * 8)) * 3 : Math.sin(t * 2) * 1.5;
+    actorShadow(ctx, x, y + 11, 11, 4);
     const col = { kraken: '#4a90d9', squid: '#a06cd5', dino: '#7bc950', koala: '#b8b8c0' }[id];
     ctx.fillStyle = col;
     ctx.beginPath(); ctx.ellipse(x, y - bob, 11, 13, 0, 0, 7); ctx.fill();
@@ -281,6 +288,7 @@ var G = globalThis.G || (globalThis.G = {});
     const c = C(), p = st.player, t = st.time || 0;
     const walking = Math.hypot(p.vx || 0, (p.lastMx || 0)) > 0;
     const bob = (p.moving ? Math.abs(Math.sin(p.walk || 0)) * 3 : 0);
+    actorShadow(ctx, p.x, p.y + 13, 14, 5);
     ctx.save();
     if (p.hurtT > 0.6) ctx.globalAlpha = 0.55;
     // flashlight beam wedge (visible day and night)
@@ -329,6 +337,7 @@ var G = globalThis.G || (globalThis.G = {});
       const def = C().ANIMALS[a.type];
       const flip = Math.cos(a.dir) < 0 ? -1 : 1;
       const bob = a.state === 'scamper' ? Math.abs(Math.sin(a.walk)) * 5 : Math.abs(Math.sin(a.walk || 0)) * 2;
+      actorShadow(ctx, a.x, a.y + 8, def.r * 1.0, def.r * 0.4);
       ctx.save();
       ctx.translate(a.x, a.y);
       if (a.hitT > 0) { ctx.globalAlpha = 0.7; }
@@ -427,6 +436,7 @@ var G = globalThis.G || (globalThis.G = {});
     const t = st.time || 0;
     for (const cu of st.cultists) {
       const bob = Math.abs(Math.sin(cu.walk)) * 3;
+      actorShadow(ctx, cu.x, cu.y + 10, 10, 4);
       ctx.save(); ctx.translate(cu.x, cu.y);
       const flip = Math.cos(cu.dir) < 0 ? -1 : 1; ctx.scale(flip, 1);
       ctx.fillStyle = '#3d3d3d';
@@ -448,56 +458,129 @@ var G = globalThis.G || (globalThis.G = {});
     }
   };
 
+  // Drawn only if the sprite PNGs fail to load (file missing, etc.).
+  function drawCatFallback(ctx, w, h, asleep, covering) {
+    const fur = '#2c2c32';
+    ctx.fillStyle = fur;
+    ctx.beginPath(); ctx.ellipse(w * 0.22, -h * 0.32, w * 0.16, h * 0.10, 0.9, 0, 7); ctx.fill(); // tail
+    ctx.beginPath(); ctx.ellipse(0, -h * 0.36, w * 0.16, h * 0.26, 0, 0, 7); ctx.fill(); // body
+    ctx.fillRect(-w * 0.12, -h * 0.16, w * 0.07, h * 0.16);
+    ctx.fillRect(w * 0.05, -h * 0.16, w * 0.07, h * 0.16);
+    if (covering) {
+      ctx.beginPath(); ctx.arc(-w * 0.12, -h * 0.72, w * 0.12, 0, 7); ctx.arc(w * 0.12, -h * 0.72, w * 0.12, 0, 7); ctx.fill();
+    } else if (!asleep) {
+      ctx.save(); ctx.translate(-w * 0.10, -h * 0.50); ctx.rotate(-0.75);
+      ctx.fillRect(-w * 0.035, -h * 0.22, w * 0.07, h * 0.24); ctx.restore();
+      ctx.save(); ctx.translate(w * 0.10, -h * 0.50); ctx.rotate(0.75);
+      ctx.fillRect(-w * 0.035, -h * 0.22, w * 0.07, h * 0.24); ctx.restore();
+      ctx.fillStyle = '#dfe6ee';
+      for (const s of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(s * w * 0.28, -h * 0.72); ctx.lineTo(s * w * 0.40, -h * 0.82); ctx.lineTo(s * w * 0.30, -h * 0.70);
+        ctx.closePath(); ctx.fill();
+      }
+    }
+    ctx.fillStyle = fur;
+    ctx.beginPath(); ctx.arc(0, -h * 0.70, w * 0.20, 0, 7); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.14, -h * 0.82); ctx.lineTo(-w * 0.10, -h * 0.98); ctx.lineTo(-w * 0.02, -h * 0.84); ctx.closePath();
+    ctx.moveTo(w * 0.14, -h * 0.82); ctx.lineTo(w * 0.10, -h * 0.98); ctx.lineTo(w * 0.02, -h * 0.84); ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#c9a8a8';
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.11, -h * 0.84); ctx.lineTo(-w * 0.09, -h * 0.93); ctx.lineTo(-w * 0.05, -h * 0.84); ctx.closePath();
+    ctx.moveTo(w * 0.11, -h * 0.84); ctx.lineTo(w * 0.09, -h * 0.93); ctx.lineTo(w * 0.05, -h * 0.84); ctx.closePath();
+    ctx.fill();
+    if (asleep) {
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(-w * 0.06, -h * 0.70, w * 0.05, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+      ctx.beginPath(); ctx.arc(w * 0.06, -h * 0.70, w * 0.05, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+    } else if (!covering) {
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.ellipse(-w * 0.06, -h * 0.72, w * 0.055, w * 0.07, 0, 0, 7);
+      ctx.ellipse(w * 0.06, -h * 0.72, w * 0.055, w * 0.07, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#1a1220';
+      ctx.beginPath(); ctx.arc(-w * 0.05, -h * 0.71, w * 0.022, 0, 7); ctx.arc(w * 0.05, -h * 0.71, w * 0.022, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(0, -h * 0.62, w * 0.05, w * 0.055, 0, 0, 7); ctx.fill();
+    }
+  }
+
   G.drawCat = function (ctx, st) {
     const c = C(), cat = st.cat, t = st.time || 0;
-    const size = c.CAT_SIZE;
-    const bob = cat.state === 'shooed' ? Math.abs(Math.sin(cat.walk * 1.4)) * 6 : Math.abs(Math.sin(cat.walk)) * 2;
+    const w = c.CAT_SIZE.w, h = c.CAT_SIZE.h;
+    const dbg = G.catDebug;
+    let state = cat.state, wake = cat.wakeT || 0, beamT = cat.beamT || 0;
+    if (dbg) {
+      if (dbg.beam) beamT = 1;
+      if (dbg.stateOverride === 'guardWake') { state = 'guard'; wake = 2; }
+      else if (dbg.stateOverride && dbg.stateOverride !== 'off') state = dbg.stateOverride;
+    }
+    const asleep = state === 'asleep' || (state === 'guard' && wake <= 0);
+    const shooed = state === 'shooed';
+    const stalk = state === 'stalk';
+    const covering = shooed || beamT > 0.15;
+    const moving = stalk || shooed || state === 'prowl';
+    const bob = shooed ? Math.abs(Math.sin(cat.walk * 1.15)) * 3 : moving ? Math.abs(Math.sin(cat.walk)) * 1.4 : 0;
+    const breathe = asleep ? Math.sin(t * 1.4) * 0.01 : 0;
+    const top = -h + 14 - bob;
+
+    actorShadow(ctx, cat.x, cat.y + 10, w * 0.28, h * 0.07);
+
     ctx.save();
     ctx.translate(cat.x, cat.y);
-    const flip = cat.state === 'shooed' ? (Math.cos(cat.dir) < 0 ? -1 : 1) : (Math.cos(cat.dir) < 0 ? -1 : 1);
-    ctx.scale(flip, 1);
-    if (G.catImg) {
-      const w = size.w, h = size.h;
-      ctx.drawImage(G.catImg, -w / 2, -h + 18 - bob, w, h);
+    const flip = Math.cos(cat.dir) < 0 ? -1 : 1;
+    ctx.scale(flip * (1 + breathe), 1 - breathe);
+
+    const img = covering && G.catShooImg ? G.catShooImg
+      : asleep && G.catSleepImg ? G.catSleepImg
+      : G.catImg;
+    if (img) {
+      ctx.drawImage(img, -w / 2, top, w, h);
     } else {
-      // fallback cartoon cat (if the image can't load)
-      ctx.fillStyle = '#4a4a55';
-      ctx.beginPath(); ctx.ellipse(0, -h * 0.35 - bob, w * 0.42, h * 0.34, 0, 0, 7); ctx.fill();
-      ctx.beginPath(); ctx.arc(0, -h * 0.78 - bob, w * 0.3, 0, 7); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(-w * 0.28, -h * 0.95 - bob); ctx.lineTo(-w * 0.2, -h * 1.15 - bob); ctx.lineTo(-w * 0.08, -h * 0.98 - bob); ctx.closePath();
-      ctx.moveTo(w * 0.28, -h * 0.95 - bob); ctx.lineTo(w * 0.2, -h * 1.15 - bob); ctx.lineTo(w * 0.08, -h * 0.98 - bob); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#ffd76e';
-      ctx.beginPath(); ctx.arc(-7, -h * 0.8 - bob, 4, 0, 7); ctx.arc(7, -h * 0.8 - bob, 4, 0, 7); ctx.fill();
-      ctx.fillStyle = '#222';
-      ctx.beginPath(); ctx.arc(-7, -h * 0.8 - bob, 1.8, 0, 7); ctx.arc(7, -h * 0.8 - bob, 1.8, 0, 7); ctx.fill();
+      drawCatFallback(ctx, w, h, asleep, covering);
     }
-    // state overlays
-    if (cat.state === 'shooed') {
-      // paws over head + sweat drops (§3/§8)
-      ctx.fillStyle = '#3d3d47';
-      ctx.beginPath(); ctx.arc(-16, -size.h * 0.92 - bob, 12, 0, 7); ctx.arc(16, -size.h * 0.92 - bob, 12, 0, 7); ctx.fill();
+    ctx.restore();
+
+    // ---- emotion bubbles in world space (never mirrored) ----
+    const hx = cat.x, hy = cat.y + top - 12;
+    if (beamT > 0.15 && !shooed) { // sparks while the beam lands
+      ctx.fillStyle = '#ffd76e';
+      for (let i = 0; i < 4; i++) {
+        const a = t * 5 + i * 1.57;
+        star(ctx, hx + Math.cos(a) * (w * 0.55), hy + Math.sin(a) * 8, 4.5);
+      }
+    }
+    if (stalk) { // big red "!" + steam puffs
+      ctx.fillStyle = '#ff5f5f'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center';
+      ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 3;
+      ctx.strokeText('!', hx, hy - 6); ctx.fillText('!', hx, hy - 6);
+      ctx.fillStyle = 'rgba(255,255,255,.75)';
+      for (let i = 0; i < 2; i++) {
+        const px = hx + (i ? 1 : -1) * (w * 0.5) + Math.sin(t * 7 + i * 2) * 2;
+        ctx.beginPath(); ctx.arc(px, hy + 6 + i * 5, 4 + i, 0, 7); ctx.fill();
+      }
+    }
+    if (state === 'guard' && wake > 0 && !shooed) { // "??" while waking up grumpy
+      ctx.fillStyle = '#ffd76e'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center';
+      ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 3;
+      ctx.strokeText('??', hx, hy - 4); ctx.fillText('??', hx, hy - 4);
+    }
+    if (shooed) { // indignant sweat drops
       ctx.fillStyle = '#9adcff';
       for (let i = 0; i < 2; i++) {
-        const dx = (i ? 1 : -1) * (28 + Math.sin(t * 8 + i) * 4);
-        ctx.beginPath(); ctx.ellipse(dx, -size.h * 0.6 - bob + Math.cos(t * 8 + i) * 4, 3, 5, 0, 0, 7); ctx.fill();
+        const dx = (i ? 1 : -1) * (w * 0.5 + Math.sin(t * 8 + i) * 3);
+        ctx.beginPath(); ctx.ellipse(hx + dx, hy + 18 + Math.cos(t * 8 + i) * 4, 3, 5, 0, 0, 7); ctx.fill();
       }
-    } else if (cat.state === 'asleep' || (cat.state === 'guard' && cat.wakeT <= 0)) {
-      ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center';
+    }
+    if (asleep) { // drifting Z z z
+      ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center';
       for (let i = 0; i < 3; i++) {
         const ph = (t * 0.7 + i * 0.33) % 1;
         ctx.globalAlpha = 1 - ph;
-        ctx.fillText('Z', 20 + ph * 18, -size.h - 10 - ph * 22);
+        ctx.fillText('Z', hx + w * 0.3 + ph * 20, hy - ph * 24);
       }
       ctx.globalAlpha = 1;
-    } else if (cat.state === 'stalk') {
-      ctx.fillStyle = '#ff5f5f'; ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('!', 0, -size.h - 12 - bob);
     }
-    if (cat.beamT > 0.15 && cat.state !== 'shooed') {
-      ctx.fillStyle = '#ffd76e'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('>.<', 0, -size.h - 8);
-    }
-    ctx.restore();
   };
 
   G.drawFx = function (ctx, st) {

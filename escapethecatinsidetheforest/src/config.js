@@ -28,7 +28,7 @@ G.CONFIG = {
   HUNGER_DRAIN: 0.34,      // per second (~one full cycle from full to empty)
   STARVE_DPS: 0.125,       // hearts per second while hunger is empty (slow, kind)
   FIRE_HEAL: 0.10,         // hearts per second near a lit fire (level >= 2)
-  INVULN_T: 1.0,           // seconds of mercy invulnerability after a hit
+  INVULN_T: 1.25,          // seconds of mercy invulnerability after a hit
   ATTACK_CD: { hands: 0.5, ice: 0.42, strong: 0.6 },   // seconds between bonks
   ATTACK_DMG: { hands: 1, ice: 1, strong: 2 },         // bonk damage
   ATTACK_RANGE: { hands: 44, ice: 48, strong: 58 },    // px arc reach
@@ -46,7 +46,8 @@ G.CONFIG = {
   GATHERING_FLASH_BONUS: 1.5, // beam range multiplier during The Great Gathering
 
   // ---- The Cat (§3, §8) ----
-  CAT_SIZE: { w: 64, h: 88 },        // about 2x3 tiles
+  // Sprite is nearly square (arms out). ~3 tiles tall so the Cat reads as big.
+  CAT_SIZE: { w: 96, h: 98 },
   CAT_SPEED_PROWL: 62,     // px/s while prowling
   CAT_SPEED_STALK: 96,     // px/s while stalking (player is 138 — always escapable)
   CAT_PROWL_RADIUS: 9 * 32,// starts caring about the player within this range (day)
@@ -74,7 +75,7 @@ G.CONFIG = {
     bear:       { hp: 3, dmg: 0.5,  speed: 72,  r: 20, caps: { forest: 2, snow: 1 } },
     alphaWolf:  { hp: 2, dmg: 1,    speed: 118, r: 17, caps: { jungle: 2, grove: 2 } },
     alphaBear:  { hp: 4, dmg: 1,    speed: 84,  r: 24, caps: { snow: 1, lava: 1 } },
-    emberHog:   { hp: 3, dmg: 1,    speed: 110, r: 17, caps: { lava: 4 } },
+    emberHog:   { hp: 3, dmg: 1,    speed: 110, r: 17, caps: { lava: 3 } },
   },
   WOLF_NIGHT_CAP: { base: 3, perNight: 0.09, max: 8 }, // extra wolves at night ramp
   WOLF_CAMP_SAFE_NIGHTS: 3,     // nights 1-3: wolves never spawn near camp (§20)

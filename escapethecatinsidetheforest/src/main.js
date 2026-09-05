@@ -21,31 +21,54 @@ var G = globalThis.G || (globalThis.G = {});
   window.addEventListener('orientationchange', () => setTimeout(resize, 250));
   resize();
 
-  // ------------------------------------------------------------------ cat sprite (§3): the designer's drawing
+  // ------------------------------------------------------------------ params (used by early blocks below)
+  const params = new URLSearchParams(location.search);
+
+  // ------------------------------------------------------------------ cat sprites (§3): the designer's plush Cat, cut out of the studio photo
   (function loadCat() {
-    const img = new Image();
-    img.onload = () => {
-      try {
-        const c2 = document.createElement('canvas');
-        c2.width = img.naturalWidth; c2.height = img.naturalHeight;
-        const x2 = c2.getContext('2d');
-        x2.drawImage(img, 0, 0);
-        // clean up nearly-transparent edge pixels; keep the art untouched
-        try {
-          const id = x2.getImageData(0, 0, c2.width, c2.height);
-          let changed = false;
-          for (let i = 3; i < id.data.length; i += 4) {
-            if (id.data[i] > 0 && id.data[i] < 26) { id.data[i] = 0; changed = true; }
-          }
-          if (changed) x2.putImageData(id, 0, 0);
-          G.catImg = c2;
-        } catch (e) { G.catImg = img; } // file:// taint guard: use the image as-is
-      } catch (e) { G.catImg = img; }
-      const t = $('titleCat'); if (t) t.classList.remove('hidden');
-    };
-    img.onerror = () => { G.catImg = null; };
-    img.src = 'assets/cat.png';
+    function load(src, assign) {
+      const img = new Image();
+      img.onload = () => assign(img);
+      img.onerror = () => assign(null);
+      img.src = src;
+    }
+    load('assets/cat.png', (img) => {
+      G.catImg = img;
+      const t = $('titleCat');
+      if (t && img) t.classList.remove('hidden');
+    });
+    load('assets/cat-sleep.png', (img) => { G.catSleepImg = img; });
+    load('assets/cat-shoo.png', (img) => { G.catShooImg = img; });
   })();
+
+  // ------------------------------------------------------------------ ?catdebug=1 — preview the Cat's poses next to the player
+  if (params.get('catdebug') === '1') {
+    (function buildCatDebug() {
+      const panel = document.createElement('div');
+      panel.id = 'catdebug';
+      panel.innerHTML = '<b>🐱 Cat poses</b>' +
+        '<div class="cdRow"><button data-em="off">Free</button><button data-em="asleep">Sleep</button>' +
+        '<button data-em="prowl">Prowl</button><button data-em="stalk">Stalk</button>' +
+        '<button data-em="guardWake">Grumpy</button><button data-em="shooed">Shooed</button>' +
+        '<button id="cdBeam">Beam ✨</button></div>';
+      document.body.appendChild(panel);
+      panel.querySelectorAll('[data-em]').forEach(b => G.onTap(b, () => {
+        const em = b.dataset.em;
+        G.catDebug = em === 'off' ? null : { stateOverride: em };
+        if (G.state && em !== 'off') {
+          const p = G.state.player, T = G.CONFIG.TILE;
+          G.state.cat.x = p.x + Math.cos(p.facing) * 3 * T;
+          G.state.cat.y = p.y + Math.sin(p.facing) * 3 * T;
+          G.state.cat.state = em === 'guardWake' ? 'guard' : em;
+          G.state.cat.shooT = 999;
+        }
+      }));
+      G.onTap(panel.querySelector('#cdBeam'), () => {
+        G.catDebug = G.catDebug || { stateOverride: 'off' };
+        G.catDebug.beam = !G.catDebug.beam;
+      });
+    })();
+  }
 
   // ------------------------------------------------------------------ input state
   const keys = new Set();
@@ -90,29 +113,37 @@ var G = globalThis.G || (globalThis.G = {});
     joyEl.classList.remove('show');
     knobEl.style.transform = 'translate(0,0)';
   }
+  function uiTarget(el) {
+    return !!(el && el.closest && el.closest('button, a, input, .slot, .screen, .panelBox, #hotbar, #catdebug'));
+  }
+  function playTouchOk() {
+    return !!(G.ui && G.ui.playing && !G.ui.overlayOpen && G.state && !G.state.paused);
+  }
   document.addEventListener('touchstart', (e) => {
     G.ui.ensureAudio && G.ui.ensureAudio();   // unlock audio on first tap (§17)
-    G.sfx && G.sfx('click');
-    for (const t of e.changedTouches) {
-      if (t.clientX < vw * 0.55 && touch.joyId === null && !t.target.closest('.btn, .slot, .uibtn')) {
+    // Never preventDefault on menus — iOS Safari then swallows the click.
+    if (uiTarget(e.target) || !playTouchOk()) return;
+    for (const t of e.changedTouches || []) {
+      if (t.clientX < vw * 0.55 && touch.joyId === null) {
         joyStart(t.clientX, t.clientY, t.identifier);
+        e.preventDefault();
       }
     }
-    if (e.target.closest('#game')) e.preventDefault();
   }, { passive: false });
   document.addEventListener('gesturestart', (e) => e.preventDefault()); // iOS pinch
   document.addEventListener('touchmove', (e) => {
-    for (const t of e.changedTouches) if (t.identifier === touch.joyId) joyMove(t.clientX, t.clientY);
-    e.preventDefault();
+    for (const t of e.changedTouches || []) if (t.identifier === touch.joyId) joyMove(t.clientX, t.clientY);
+    if (touch.joyId !== null) e.preventDefault();
   }, { passive: false });
   document.addEventListener('touchend', (e) => {
-    for (const t of e.changedTouches) if (t.identifier === touch.joyId) joyEnd();
+    for (const t of e.changedTouches || []) if (t.identifier === touch.joyId) joyEnd();
   });
   document.addEventListener('touchcancel', joyEnd);
   // mouse fallback for desktop testing of the joystick
   let mouseJoy = false;
   window.addEventListener('mousedown', (e) => {
-    if (e.clientX < vw * 0.55 && !e.target.closest('.btn, .slot, .uibtn, .panelBox')) { mouseJoy = true; joyStart(e.clientX, e.clientY, 'mouse'); }
+    if (!playTouchOk() || uiTarget(e.target)) return;
+    if (e.clientX < vw * 0.55) { mouseJoy = true; joyStart(e.clientX, e.clientY, 'mouse'); }
   });
   window.addEventListener('mousemove', (e) => { if (mouseJoy) joyMove(e.clientX, e.clientY); });
   window.addEventListener('mouseup', () => { if (mouseJoy) { mouseJoy = false; joyEnd(); } });
@@ -174,8 +205,6 @@ var G = globalThis.G || (globalThis.G = {});
     return input;
   }
 
-  // ------------------------------------------------------------------ params
-  const params = new URLSearchParams(location.search);
   const FAST = params.get('fast') === '1';
   const BOT = params.get('bot') === '1';
   const timeScale = FAST ? 10 : 1;
@@ -187,24 +216,24 @@ var G = globalThis.G || (globalThis.G = {});
   document.addEventListener('visibilitychange', () => { if (document.hidden && G.state && G.ui.playing) G.save(G.state); });
   window.addEventListener('beforeunload', () => { if (G.state && G.ui.playing) G.save(G.state); });
 
-  // ------------------------------------------------------------------ screens wiring
-  $('splash').addEventListener('click', () => {
+  // ------------------------------------------------------------------ screens wiring (touchend + click — iPad Safari)
+  G.onTap($('splash'), () => {
     try { localStorage.setItem('etcif_splash_seen', '1'); } catch (e) {}
     G.ui.showTitle();
   });
-  $('btnStory').addEventListener('click', () => startNew('story'));
-  $('btnTrue').addEventListener('click', () => startNew('true'));
-  $('btnContinue').addEventListener('click', () => {
+  G.onTap($('btnStory'), () => startNew('story'));
+  G.onTap($('btnTrue'), () => startNew('true'));
+  G.onTap($('btnContinue'), () => {
     const st = G.load();
     if (st) G.ui.startGame(st); else startNew('story');
   });
-  $('btnHow').addEventListener('click', () => {
+  G.onTap($('btnHow'), () => {
     $('howto').classList.remove('hidden');
   });
-  $('howClose').addEventListener('click', () => $('howto').classList.add('hidden'));
-  $('btnResume').addEventListener('click', () => G.ui.hidePause());
-  $('btnPauseHow').addEventListener('click', () => { $('howto').classList.remove('hidden'); });
-  $('btnQuit').addEventListener('click', () => {
+  G.onTap($('howClose'), () => $('howto').classList.add('hidden'));
+  G.onTap($('btnResume'), () => G.ui.hidePause());
+  G.onTap($('btnPauseHow'), () => { $('howto').classList.remove('hidden'); });
+  G.onTap($('btnQuit'), () => {
     if (G.state) G.save(G.state);
     G.ui.hidePause();
     G.state = null;
