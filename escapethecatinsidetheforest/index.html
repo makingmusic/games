@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Escape the Cat Inside the Forest</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game">
+    <canvas id="cv"></canvas>
+
+    <!-- ======================= HUD ======================= -->
+    <div id="hud" class="hidden">
+      <div id="topleft">
+        <div id="hearts"></div>
+        <div id="hungerwrap"><span class="hicon">🍇</span><div id="hungerouter"><div id="hungerbar"></div></div></div>
+        <div id="firepips"></div>
+        <div id="daylabel"></div>
+      </div>
+      <div id="topright">
+        <button class="uibtn" id="btnMute">🔊</button>
+        <button class="uibtn" id="btnPause">⏸️</button>
+      </div>
+      <div id="compass"></div>
+      <div id="banner"></div>
+      <div id="toasts"></div>
+      <div id="botconsole" class="hidden"></div>
+
+      <div id="hotbar"></div>
+
+      <div id="joyzone"></div>
+      <div id="joystick"><div id="knob"></div></div>
+      <div id="actionbuttons">
+        <button class="abtn bonk" id="btnBonk">Bonk!</button>
+        <button class="abtn light" id="btnLight">🔦</button>
+        <button class="abtn grab" id="btnGrab">✋</button>
+        <button class="abtn yum" id="btnYum">😋</button>
+        <button class="abtn craft" id="btnCraft">🛠️</button>
+      </div>
+      <div id="hurtflash" class="hidden"></div>
+      <div id="rotatehint">🔄 Rotate your iPad for the best adventure!</div>
+    </div>
+
+    <!-- ======================= SCREENS ======================= -->
+    <div id="splash" class="screen hidden">
+      <div class="splashbox">
+        <p class="trueline">This game is based on the true story.<br>Some details have been changed.</p>
+        <p class="tapline">tap to continue</p>
+      </div>
+    </div>
+
+    <div id="title" class="screen hidden">
+      <div class="titlebox">
+        <img id="titleCat" class="hidden" src="assets/cat.png" alt="the Cat">
+        <h1>ESCAPE THE CAT<br>INSIDE THE FOREST</h1>
+        <button class="bigbtn" id="btnContinue">▶️ Continue</button>
+        <button class="bigbtn" id="btnStory">🌱 Story Mode</button>
+        <button class="bigbtn warn" id="btnTrue">💀 True Story Mode <small>(Very Hard!)</small></button>
+        <button class="bigbtn alt" id="btnHow">❓ How to Play</button>
+        <p class="controls">
+          📱 Left thumb moves • big buttons Bonk / Light / Grab / Yum<br>
+          ⌨️ WASD or arrows • Space Bonk • F Light • E Grab • 1 Yum • 2 Torch • C Craft • Esc Pause
+        </p>
+      </div>
+    </div>
+
+    <div id="howto" class="screen hidden">
+      <div class="panelBox">
+        <h2>How to Play</h2>
+        <div class="cards">
+          <div class="card"><span class="cico">🔥</span><b>Keep your fire big and cozy!</b><span>Add wood so it never goes out.</span></div>
+          <div class="card"><span class="cico">🔦</span><b>The Cat hates the flashlight!</b><span>Shine it and the Cat will cover its head and walk away.</span></div>
+          <div class="card"><span class="cico">🧒</span><b>Find the 4 kids!</b><span>Follow the arrows and the meters on the board.</span></div>
+          <div class="card"><span class="cico">🌙</span><b>Stay brave for 85 nights!</b><span>Then you fly home on a giant kite-glider!</span></div>
+        </div>
+        <button class="bigbtn" id="howClose">Let's play!</button>
+      </div>
+    </div>
+
+    <div id="pausemenu" class="screen hidden">
+      <div class="panelBox">
+        <h2>⏸️ Paused</h2>
+        <button class="bigbtn" id="btnResume">▶️ Keep playing</button>
+        <button class="bigbtn alt" id="btnPauseHow">❓ How to Play</button>
+        <button class="bigbtn alt" id="btnQuit">💾 Save &amp; Quit to Title</button>
+      </div>
+    </div>
+
+    <div id="panel" class="screen hidden"></div>
+    <div id="defeat" class="screen hidden"></div>
+    <div id="win" class="screen hidden"></div>
+  </div>
+
+  <script src="src/util.js"></script>
+  <script src="src/config.js"></script>
+  <script src="src/world.js"></script>
+  <script src="src/entities.js"></script>
+  <script src="src/systems.js"></script>
+  <script src="src/bot.js"></script>
+  <script src="src/sprites.js"></script>
+  <script src="src/ui.js"></script>
+  <script src="src/main.js"></script>
+</body>
+</html>

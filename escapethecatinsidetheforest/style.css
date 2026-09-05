@@ -1,0 +1,185 @@
+/* Escape the Cat Inside the Forest — kid-friendly UI */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body {
+  font-family: "Comic Sans MS", "Chalkboard SE", "Roundee", sans-serif;
+  background: #16211a; touch-action: none; user-select: none; -webkit-user-select: none;
+  position: fixed; inset: 0;
+}
+#game { position: fixed; inset: 0; }
+#cv { position: absolute; inset: 0; display: block; }
+.hidden { display: none !important; }
+
+/* ---------------- HUD ---------------- */
+#hud { position: absolute; inset: 0; pointer-events: none; }
+#hud button, #hotbar { pointer-events: auto; }
+
+#topleft { position: absolute; top: calc(10px + env(safe-area-inset-top)); left: calc(12px + env(safe-area-inset-left)); }
+#hearts .h { font-size: 26px; margin-right: 2px; text-shadow: 0 2px 0 rgba(0,0,0,.35); }
+#hearts .full { color: #ff5f7e; }
+#hearts .half { color: #ff9db1; }
+#hearts .empty { color: #4a3a41; }
+#hungerwrap { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.hicon { font-size: 18px; }
+#hungerouter { width: 130px; height: 14px; border-radius: 8px; background: rgba(0,0,0,.45); border: 2px solid rgba(255,255,255,.35); overflow: hidden; }
+#hungerbar { height: 100%; width: 100%; background: linear-gradient(90deg, #8ee6a8, #ffd76e); border-radius: 6px; }
+#firepips { margin-top: 5px; font-size: 14px; color: #ffd7a8; text-shadow: 0 1px 0 rgba(0,0,0,.4); letter-spacing: 1px; }
+#daylabel { margin-top: 4px; font-size: 15px; font-weight: bold; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
+
+#topright { position: absolute; top: calc(10px + env(safe-area-inset-top)); right: calc(12px + env(safe-area-inset-right)); display: flex; gap: 8px; }
+.uibtn { width: 46px; height: 46px; border-radius: 14px; border: 2px solid rgba(255,255,255,.4); background: rgba(20,30,25,.65); font-size: 20px; }
+
+#compass {
+  position: absolute; top: calc(12px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+  display: flex; gap: 10px; background: rgba(20,30,25,.5); border-radius: 14px; padding: 4px 10px;
+}
+#compass .carrow { font-size: 15px; display: inline-block; transition: transform .3s; }
+#compass .carrow.done { color: #9be564; }
+
+#banner {
+  position: absolute; top: 22%; left: 50%; transform: translateX(-50%) scale(.8);
+  font-size: 26px; font-weight: bold; text-shadow: 0 3px 0 rgba(0,0,0,.5);
+  opacity: 0; transition: all .35s; text-align: center; white-space: nowrap;
+}
+#banner.show { opacity: 1; transform: translateX(-50%) scale(1); }
+
+#toasts { position: absolute; bottom: 118px; left: 50%; transform: translateX(-50%); text-align: center; }
+.toast {
+  background: rgba(20,30,25,.75); color: #ffe9a8; font-size: 15px; padding: 6px 14px;
+  border-radius: 12px; margin-top: 4px; max-width: 80vw;
+}
+
+#botconsole {
+  position: absolute; right: 8px; top: 70px; width: 260px; max-height: 40vh; overflow-y: auto;
+  background: rgba(0,0,0,.7); color: #9be564; font: 11px/1.4 monospace; border-radius: 8px; padding: 6px;
+  pointer-events: auto;
+}
+
+#hotbar {
+  position: absolute; bottom: calc(10px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+  display: flex; gap: 5px;
+}
+.slot {
+  width: 44px; height: 44px; border-radius: 12px; background: rgba(20,30,25,.68);
+  border: 2px solid rgba(255,255,255,.28); position: relative; display: flex; align-items: center; justify-content: center;
+}
+.slot:active { background: rgba(90,120,90,.7); }
+.sicon { font-size: 20px; }
+.scount {
+  position: absolute; bottom: -2px; right: 2px; font-size: 11px; font-weight: bold; color: #fff;
+  text-shadow: 0 1px 0 #000;
+}
+
+/* ---------------- touch controls (§17) ---------------- */
+#joystick {
+  position: absolute; width: 120px; height: 120px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.35); background: rgba(20,30,25,.3);
+  display: none; pointer-events: none;
+}
+#joystick.show { display: block; }
+#knob {
+  position: absolute; left: 30px; top: 30px; width: 60px; height: 60px; border-radius: 50%;
+  background: rgba(255,255,255,.45);
+}
+#actionbuttons {
+  position: absolute; right: calc(14px + env(safe-area-inset-right)); bottom: calc(64px + env(safe-area-inset-bottom));
+  width: 190px; height: 210px; pointer-events: none;
+}
+.abtn {
+  position: absolute; border-radius: 50%; border: 3px solid rgba(255,255,255,.5);
+  font-family: inherit; font-weight: bold; font-size: 17px; color: #fff; pointer-events: auto;
+  text-shadow: 0 1px 0 rgba(0,0,0,.4);
+}
+.abtn:active { transform: scale(.92); }
+.abtn.bonk { width: 84px; height: 84px; right: 0; bottom: 0; background: radial-gradient(#ff8a80, #e05f5f); font-size: 19px; }
+.abtn.light { width: 64px; height: 64px; right: 96px; bottom: 26px; background: radial-gradient(#ffe08a, #f5a623); font-size: 24px; }
+.abtn.light.dim { filter: grayscale(.8) brightness(.7); }
+.abtn.light.active { box-shadow: 0 0 16px 6px rgba(255,224,138,.8); }
+.abtn.grab { width: 64px; height: 64px; right: 10px; bottom: 100px; background: radial-gradient(#b8e986, #7bc950); font-size: 24px; }
+.abtn.yum { width: 56px; height: 56px; right: 96px; bottom: 108px; background: radial-gradient(#ffd1dc, #ff8ab5); font-size: 22px; }
+.abtn.craft { width: 50px; height: 50px; right: 30px; bottom: 172px; background: radial-gradient(#c9d6df, #8d99a6); font-size: 20px; }
+
+#hurtflash {
+  position: absolute; inset: 0; background: rgba(255,182,193,.35); pointer-events: none;
+  animation: hurtfade .22s ease-out;
+}
+@keyframes hurtfade { from { opacity: 1; } to { opacity: 0; } }
+
+#rotatehint {
+  position: absolute; top: 60%; left: 50%; transform: translateX(-50%);
+  background: rgba(20,30,25,.8); color: #ffe9a8; border-radius: 12px; padding: 8px 14px; font-size: 15px;
+  display: none;
+}
+@media (orientation: portrait) { #rotatehint { display: block; } }
+
+/* ---------------- screens ---------------- */
+.screen {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(10, 16, 24, .82); z-index: 10;
+}
+#splash { background: #10192b; }
+.splashbox { text-align: center; padding: 40px; }
+.trueline { font-size: 26px; color: #e8ecf4; line-height: 1.6; font-style: italic; }
+.tapline { margin-top: 60px; font-size: 18px; color: #7d8aa5; animation: pulse 1.6s infinite; }
+@keyframes pulse { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
+
+.titlebox { text-align: center; padding: 20px; max-width: 560px; }
+#titleCat { height: 150px; margin-bottom: 8px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.5)); }
+.titlebox h1 { color: #ffe9a8; font-size: 34px; line-height: 1.15; text-shadow: 0 4px 0 rgba(0,0,0,.5); margin-bottom: 18px; }
+.bigbtn {
+  display: block; width: 100%; margin: 8px auto; padding: 14px; font-family: inherit;
+  font-size: 20px; font-weight: bold; color: #1e2b22; border: none; border-radius: 16px;
+  background: linear-gradient(#b8e986, #7bc950); box-shadow: 0 4px 0 #5da83e;
+}
+.bigbtn:active { transform: translateY(3px); box-shadow: 0 1px 0 #5da83e; }
+.bigbtn.warn { background: linear-gradient(#ffb3ba, #e05f5f); color: #fff; box-shadow: 0 4px 0 #b04343; }
+.bigbtn.warn small { font-size: 13px; }
+.bigbtn.alt { background: linear-gradient(#d8e6f0, #9db8cc); box-shadow: 0 4px 0 #7d98ac; }
+.controls { margin-top: 14px; font-size: 13px; color: #b7c2cd; line-height: 1.5; }
+
+.panelBox {
+  background: #22301f; border: 3px solid #7bc950; border-radius: 20px; padding: 20px 22px;
+  max-width: 520px; width: min(92vw, 520px); max-height: 86vh; overflow-y: auto; text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,.5);
+}
+.panelBox h2 { color: #ffe9a8; margin-bottom: 10px; }
+.panelBox .hint { color: #b7c2cd; font-size: 14px; margin: 6px 0; }
+.closeBtn, .tbtn {
+  font-family: inherit; font-weight: bold; font-size: 16px; border: none; border-radius: 12px;
+  padding: 10px 16px; margin-top: 8px; background: #7bc950; color: #1e2b22;
+}
+.closeBtn { background: #9db8cc; display: block; width: 100%; }
+.closeBtn:active, .tbtn:active { transform: scale(.95); }
+.tbtn:disabled { background: #4a5a4a; color: #7d8a7d; }
+
+.trow { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,.22); border-radius: 12px; padding: 8px 10px; margin: 6px 0; text-align: left; }
+.ticon { font-size: 26px; width: 36px; text-align: center; }
+.tinfo { flex: 1; color: #e8ecf4; }
+.tinfo b { display: block; font-size: 16px; }
+.tinfo span { font-size: 13px; color: #b7c2cd; }
+
+.firepips { font-size: 26px; color: #ffb347; letter-spacing: 2px; margin: 8px 0; }
+.brow { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,.22); border-radius: 12px; padding: 10px; margin: 6px 0; color: #e8ecf4; font-size: 17px; }
+.bicon { font-size: 24px; }
+.barrow { font-size: 22px; color: #ffe9a8; display: inline-block; }
+.bm { margin-left: auto; font-weight: bold; color: #ffd76e; }
+
+.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+.card { background: rgba(0,0,0,.25); border-radius: 14px; padding: 12px 8px; color: #e8ecf4; display: flex; flex-direction: column; gap: 4px; }
+.card b { font-size: 14px; }
+.card span { font-size: 12px; color: #b7c2cd; }
+.cico { font-size: 34px; }
+
+.catface { text-align: center; }
+.catface img { height: 140px; }
+.mustache { color: #b7c2cd; font-size: 14px; margin: 6px 0; }
+.stats { text-align: left; display: inline-block; margin: 10px 0; color: #e8ecf4; font-size: 16px; line-height: 1.8; }
+.kite { font-size: 60px; animation: fly 3s ease-in-out infinite; display: inline-block; }
+@keyframes fly { 0%,100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-16px) rotate(6deg); } }
+
+@media (max-width: 740px) {
+  .cards { grid-template-columns: 1fr; }
+  #hotbar { max-width: 96vw; flex-wrap: wrap; justify-content: center; }
+  .slot { width: 38px; height: 38px; }
+  #compass { display: none; }  /* small screens: arrows live in the board panel */
+}
