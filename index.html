@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>makingmusic's games</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Comic Sans MS", "Chalkboard SE", sans-serif;
+      background: linear-gradient(160deg, #1d3a2a, #16211a);
+      color: #e8ecf4; min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 28px; padding: 24px;
+    }
+    h1 { font-size: 30px; color: #ffe9a8; text-shadow: 0 3px 0 rgba(0,0,0,.4); }
+    .games { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+    a.card {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      width: 260px; padding: 26px 20px; border-radius: 22px; text-decoration: none;
+      background: rgba(255,255,255,.07); border: 3px solid rgba(255,255,255,.18);
+      color: #fff; transition: transform .15s, border-color .15s;
+    }
+    a.card:hover { transform: translateY(-4px); border-color: #ffe9a8; }
+    .card .art { font-size: 64px; line-height: 1; }
+    .card b { font-size: 19px; }
+    .card span { font-size: 13px; color: #b7c2cd; text-align: center; }
+    .card img { height: 110px; }
+    p.note { font-size: 13px; color: #7d8aa5; }
+  </style>
+</head>
+<body>
+  <h1>🌙 Play!</h1>
+  <div class="games">
+    <a class="card" href="99nights/">
+      <span class="art">🏕️</span>
+      <b>99 Nights</b>
+      <span>Survive 99 spooky-but-cute nights. Keep the fire bright!</span>
+    </a>
+    <a class="card" href="escapethecatinsidetheforest/">
+      <img src="escapethecatinsidetheforest/assets/cat.png" alt="the Cat">
+      <b>Escape the Cat Inside the Forest</b>
+      <span>Shoo the Cat with your flashlight, free the kids, survive 85 nights!</span>
+    </a>
+  </div>
+  <p class="note">Best played on an iPad. Works offline — no ads, no trackers, kid-friendly.</p>
+</body>
+</html>
