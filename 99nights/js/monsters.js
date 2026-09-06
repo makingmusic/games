@@ -1,6 +1,6 @@
 const MKIND = {
   owl: { hp: 4, r: 22, spd: 150, color: '#f4f6fb', belly: '#ffffff', emoji: '🦉', fly: true, aggro: 430, touch: 1, loot: 'owl' },
-  bat: { hp: 2, r: 18, spd: 205, color: '#8e5fd6', belly: '#a97fe0', emoji: '🦇', fly: true, aggro: 9999, touch: 1, loot: 'bat' },
+  bat: { hp: 2, r: 24, spd: 205, color: '#c45cc8', belly: '#e0b4f0', emoji: '🦇', fly: true, aggro: 9999, touch: 1, loot: 'bat' },
   ram: { hp: 5, r: 26, spd: 120, color: '#c9a06b', belly: '#e0c39a', emoji: '🐏', horns: true, aggro: 360, touch: 1, loot: 'ram' },
   cat: { hp: 4, r: 22, spd: 150, color: '#33333f', belly: '#4a4a5a', emoji: '🐈', aggro: 430, touch: 1, loot: 'cat' },
   wolf: { hp: 4, r: 22, spd: 175, color: '#8a97a6', belly: '#aab6c4', emoji: '🐺', aggro: 340, touch: 1, loot: 'wolf' },
@@ -34,11 +34,26 @@ const Monsters = (() => {
   };
   let dirT = 0;
 
+  const BAT_FRAMES = {};
+  const BAT_SEQ = ['flap0', 'flap1', 'flap2', 'flap1'];
+  for (const n of ['idle', 'flap0', 'flap1', 'flap2']) {
+    const im = new Image();
+    im.src = 'assets/bat/' + n + '.png';
+    BAT_FRAMES[n] = im;
+  }
+
+  function batImage(m) {
+    const spd = m.fleeing ? 18 : 11;
+    const im = BAT_FRAMES[BAT_SEQ[Math.floor(m.animT * spd) % 4]];
+    if (im && im.complete && im.naturalWidth > 0) return im;
+    return null;
+  }
+
   function emotionOf(m) {
     if (m.fleeing) return '💨';
     if (m.mode === 'dizzy') return '😵';
     if (m.mode === 'tele' || m.mode === 'charge' || m.mode === 'dive' || m.mode === 'lunge' || m.mode === 'roar' || m.mode === 'shock' || m.tele > 0) return '😡';
-    if (m.provoked) return '😠';
+    if (m.provoked || m.kind === 'bat') return '😠';
     return '🙂';
   }
 
@@ -657,7 +672,7 @@ const Monsters = (() => {
         if (G.day >= 8 && Math.random() < 0.45) spawn('alphawolf', x, y, { anchor: { x, y } });
         for (let i = 0; i < n; i++) spawn('wolf', x + Utils.rand(-60, 60), y + Utils.rand(-60, 60), { anchor: { x, y } });
       } else if (plan === 'batGroup') {
-        for (let i = 0; i < 3; i++) spawn('bat', x + Utils.rand(-50, 50), y + Utils.rand(-50, 50), { anchor: { x, y } });
+        for (let i = 0; i < 3; i++) spawn('bat', x + Utils.rand(-90, 90), y + Utils.rand(-90, 90), { anchor: { x, y } });
       } else {
         spawn(plan, x, y, { anchor: { x, y } });
       }
@@ -990,9 +1005,156 @@ const Monsters = (() => {
     ctx.restore();
   }
 
+  function drawBatFallback(ctx, m, K) {
+    const r = K.r;
+    const flap = Math.sin(m.animT * 14);
+    ctx.strokeStyle = Utils.shade(K.color, -0.28);
+    ctx.lineWidth = 3.2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.18, r * 0.32);
+    ctx.lineTo(-r * 0.22, r * 0.98);
+    ctx.moveTo(r * 0.18, r * 0.32);
+    ctx.lineTo(r * 0.22, r * 0.98);
+    ctx.stroke();
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.22, r * 0.98);
+    ctx.lineTo(-r * 0.34, r * 1.05);
+    ctx.moveTo(r * 0.22, r * 0.98);
+    ctx.lineTo(r * 0.34, r * 1.05);
+    ctx.stroke();
+    for (const s of [-1, 1]) {
+      ctx.save();
+      ctx.translate(s * r * 0.12, -r * 0.12);
+      ctx.rotate(s * (0.18 + flap * 0.5));
+      ctx.fillStyle = K.belly;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(s * r * 0.45, -r * 0.9 - flap * r * 0.18);
+      ctx.lineTo(s * r * 1.75, -r * 0.1);
+      ctx.lineTo(s * r * 1.5, r * 0.6);
+      ctx.lineTo(s * r * 0.65, r * 1.0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = Utils.shade(K.color, -0.22);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(s * r * 0.45, -r * 0.9 - flap * r * 0.18);
+      ctx.moveTo(0, 0);
+      ctx.lineTo(s * r * 1.75, -r * 0.1);
+      ctx.moveTo(0, 0);
+      ctx.lineTo(s * r * 1.5, r * 0.6);
+      ctx.moveTo(0, 0);
+      ctx.lineTo(s * r * 0.65, r * 1.0);
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.fillStyle = K.color;
+    ctx.beginPath();
+    ctx.ellipse(0, r * 0.1, r * 0.4, r * 0.58, 0, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = Utils.shade(K.color, -0.28);
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(0, -r * 0.42, r * 0.48, r * 0.4, 0, 0, TAU);
+    ctx.fill();
+    ctx.stroke();
+    for (const s of [-1, 1]) {
+      ctx.fillStyle = Utils.shade(K.color, -0.05);
+      ctx.beginPath();
+      ctx.moveTo(s * r * 0.06, -r * 0.68);
+      ctx.lineTo(s * r * 0.36, -r * 1.22);
+      ctx.lineTo(s * r * 0.44, -r * 0.52);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = Utils.shade(K.color, -0.38);
+      ctx.beginPath();
+      ctx.moveTo(s * r * 0.12, -r * 0.66);
+      ctx.lineTo(s * r * 0.3, -r * 1.05);
+      ctx.lineTo(s * r * 0.34, -r * 0.55);
+      ctx.closePath();
+      ctx.fill();
+    }
+    for (const s of [-1, 1]) {
+      ctx.fillStyle = 'rgba(255,255,255,0.32)';
+      ctx.beginPath();
+      ctx.arc(s * r * 0.16, -r * 0.46, r * 0.22, 0, TAU);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(s * r * 0.16, -r * 0.46, r * 0.155, 0, TAU);
+      ctx.fill();
+    }
+    ctx.fillStyle = Utils.shade(K.color, -0.18);
+    ctx.beginPath();
+    ctx.ellipse(0, -r * 0.26, r * 0.13, r * 0.09, 0, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = '#1a0814';
+    ctx.beginPath();
+    ctx.ellipse(0, -r * 0.06, r * 0.15, r * 0.17, 0, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.08, -r * 0.14);
+    ctx.lineTo(-r * 0.03, r * 0.05);
+    ctx.lineTo(-r * 0.12, -r * 0.1);
+    ctx.moveTo(r * 0.08, -r * 0.14);
+    ctx.lineTo(r * 0.03, r * 0.05);
+    ctx.lineTo(r * 0.12, -r * 0.1);
+    ctx.fill();
+  }
+
+  function drawBat(ctx, m) {
+    const K = m.k;
+    ctx.save();
+    ctx.translate(m.x, m.y);
+    ctx.fillStyle = 'rgba(0,0,0,0.28)';
+    ctx.beginPath();
+    ctx.ellipse(0, K.r * 0.95, K.r * 1.1, K.r * 0.32, 0, 0, TAU);
+    ctx.fill();
+    const bob = Math.sin(m.animT * 3.2) * 6;
+    ctx.translate(0, bob - 8);
+    if (m.hurtT > 0) ctx.translate(Utils.rand(-2, 2), Utils.rand(-2, 2));
+    const img = batImage(m);
+    const dw = K.r * 5.2;
+    const dh = img ? dw * (img.naturalHeight / img.naturalWidth) : K.r * 3.6;
+    const foot = img ? dh * 0.80 : K.r * 1.08;
+    ctx.save();
+    if (m.dir < 0) ctx.scale(-1, 1);
+    if (m.fleeing) ctx.rotate(0.22);
+    if (img) {
+      ctx.imageSmoothingEnabled = true;
+      if (ctx.imageSmoothingQuality) ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, -dw / 2, -foot, dw, dh);
+      if (m.hurtT > 0) {
+        ctx.globalAlpha = 0.5;
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.drawImage(img, -dw / 2, -foot, dw, dh);
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1;
+      }
+    } else {
+      drawBatFallback(ctx, m, K);
+    }
+    ctx.restore();
+    if (m.hp < m.maxHp && !m.fleeing) {
+      const w = K.r * 1.7;
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(-w / 2, -foot - 8, w, 6);
+      ctx.fillStyle = '#7ed37e';
+      ctx.fillRect(-w / 2, -foot - 8, w * Math.max(0, m.hp / m.maxHp), 6);
+    }
+    drawBadge(ctx, -foot - 40, MNAMES.bat, '🦇', emotionOf(m));
+    ctx.restore();
+  }
+
   function drawOne(ctx, m) {
     if (m.kind === 'snake') drawSnake(ctx, m);
     else if (m.kind === 'deer') drawDeer(ctx, m);
+    else if (m.kind === 'bat') drawBat(ctx, m);
     else drawMon(ctx, m);
   }
 
