@@ -37,6 +37,7 @@ function createWorld(role) {
       deaths: 0,
       dead: false, respawnT: 0,
       attackCd: 0, attackAnim: 0, flash: 0, hitMarkerT: 0,
+      flashFrom: null, // bearing of the last hit, for the directional vignette
       hintT: 0
     },
     coffee: makeBoss('coffee', 'Coffee Man', 'coffeeMan', 10.5, 5.0),
@@ -53,7 +54,7 @@ function createWorld(role) {
       x: 15.0, y: 11.5, dir: 0,
       hp: 999, // Tuado is never targeted; he's just clumsy
       wanderT: 0, wx: 15.0, wy: 11.5,
-      lavaT: 6 + Math.random() * 4, warnT: 0,
+      lavaT: 6 + Math.random() * 4, warnT: 0, telegraph: false,
       scale: 0.32
     },
     minions: [

@@ -114,6 +114,21 @@ function guideAngle() {
   return angleDiff(angleTo(p.x, p.y, ARENA_CENTER.x, ARENA_CENTER.y), p.dir);
 }
 
+// Bearing to the nearest live boss — the guide arrow switches to this while
+// the player is inside the arena, so the bosses can always be found.
+function bossAngle() {
+  var p = World.player;
+  var best = null, bd = Infinity;
+  var bosses = [World.coffee, World.tea];
+  for (var i = 0; i < bosses.length; i++) {
+    if (bosses[i].lives <= 0) continue;
+    var d = dist(p.x, p.y, bosses[i].x, bosses[i].y);
+    if (d < bd) { bd = d; best = bosses[i]; }
+  }
+  if (!best) return null;
+  return angleDiff(angleTo(p.x, p.y, best.x, best.y), p.dir);
+}
+
 function completeQuest() {
   playSfx('quest');
   msg('✅ Quest complete!');
@@ -122,9 +137,10 @@ function completeQuest() {
 
 // ---------- combat rules ----------
 
-// Arena-only melee. Returns true if a hit landed.
-function meleeAttack(attacker, weapon, targets, dmgMult) {
-  if (!isArenaXY(attacker.x, attacker.y)) return false; // fighting only in the arena
+// Arena-only melee targeting, split out so the crosshair can preview it.
+// Both attacker and target must be inside the arena. Returns the target or null.
+function findMeleeTarget(attacker, weapon, targets) {
+  if (!isArenaXY(attacker.x, attacker.y)) return null; // fighting only in the arena
   var best = null, bestD = weapon.range;
   for (var i = 0; i < targets.length; i++) {
     var t = targets[i];
@@ -134,6 +150,12 @@ function meleeAttack(attacker, weapon, targets, dmgMult) {
     if (!isArenaXY(t.x, t.y)) continue; // target must also be in the arena
     best = t; bestD = d;
   }
+  return best;
+}
+
+// Arena-only melee. Returns true if a hit landed.
+function meleeAttack(attacker, weapon, targets, dmgMult) {
+  var best = findMeleeTarget(attacker, weapon, targets);
   if (best) {
     damageBadGuy(best, weapon.dmg * (dmgMult || 1));
     return true;
@@ -186,11 +208,12 @@ function damageBoss(boss, dmg, viaLink) {
   checkWin();
 }
 
-function damagePlayer(dmg, why) {
+function damagePlayer(dmg, why, fromBearing) {
   var p = World.player;
   if (p.dead || Game.state !== 'playing') return;
   p.hp -= dmg;
   p.flash = 0.4;
+  p.flashFrom = fromBearing === undefined ? null : fromBearing; // for directional hurt vignette
   playSfx('hurt');
   if (p.hp <= 0) {
     p.hp = 0;
@@ -199,6 +222,20 @@ function damagePlayer(dmg, why) {
     p.deaths++;
     msg(why || 'You got bonked!');
   }
+}
+
+// Bearing from the player's view to the nearest inbound lava blob, for the
+// HUD threat arrow. Returns radians relative to view dir, or null when no
+// lava is in flight.
+function lavaThreatAngle() {
+  var p = World.player;
+  if (p.dead || !World.lava.length) return null;
+  var best = null, bd = Infinity;
+  for (var i = 0; i < World.lava.length; i++) {
+    var d = dist(p.x, p.y, World.lava[i].x, World.lava[i].y);
+    if (d < bd) { bd = d; best = World.lava[i]; }
+  }
+  return angleDiff(angleTo(p.x, p.y, best.x, best.y), p.dir);
 }
 
 function checkWin() {
@@ -423,7 +460,8 @@ function updateBoss(b, dt) {
     // staff whack — only lands because everyone here is inside the arena
     b.attackCd = 1.0;
     b.dir = angleTo(b.x, b.y, target.x, target.y);
-    if (target === p) damagePlayer(BOSS_DMG, 'Whacked by ' + b.name + "'s yellow staff!");
+    if (target === p) damagePlayer(BOSS_DMG, 'Whacked by ' + b.name + "'s yellow staff!",
+      angleDiff(angleTo(p.x, p.y, b.x, b.y), p.dir));
     else { target.hp -= BOSS_DMG; target.flash = 0.2; }
     playSfx('swing');
   }
@@ -508,7 +546,7 @@ function updateTuado(dt) {
   if (t.warnT > 0) {
     t.warnT -= dt;
     if (t.warnT <= 0 && !p.dead && Game.state === 'playing') {
-      World.lava.push({ x: t.x, y: t.y, sx: t.x, sy: t.y, tx: p.x, ty: p.y, t: 0 });
+      World.lava.push({ x: t.x, y: t.y, sx: t.x, sy: t.y, tx: p.x, ty: p.y, t: 0, z: 0.25, trail: [] });
       playSfx('lava');
     }
   } else {
@@ -520,6 +558,7 @@ function updateTuado(dt) {
       playSfx('meow');
     }
   }
+  t.telegraph = t.warnT > 0; // renderer shows a flashing ❗ over Tuado
 }
 
 function updateMinion(m, dt) {
@@ -538,7 +577,8 @@ function updateMinion(m, dt) {
     } else if (m.attackCd <= 0) {
       m.attackCd = 1.1;
       m.dir = angleTo(m.x, m.y, p.x, p.y);
-      damagePlayer(MINION_DMG, 'Bonked by a minion!');
+      damagePlayer(MINION_DMG, 'Bonked by a minion!',
+        angleDiff(angleTo(p.x, p.y, m.x, m.y), p.dir));
     }
     return;
   }
@@ -568,14 +608,19 @@ function updateLava(dt) {
     l.t += dt / 0.9; // ~0.9s flight time
     if (l.t >= 1) {
       World.lava.splice(i, 1);
-      World.effects.push({ x: l.tx, y: l.ty, sprite: 'splash', t: 0.5, scale: 0.8 });
+      // glowing splat decal lingers at the impact point so the landing is learnable
+      World.effects.push({ x: l.tx, y: l.ty, sprite: 'splash', t: 1.2, scale: 0.7 });
       // the splash is an accident, so it can hurt anywhere — even outside the arena
       if (!p.dead && dist(p.x, p.y, l.tx, l.ty) < 1.3) {
-        damagePlayer(TUADO_LAVA_DMG, 'Splat! Tuado\'s lava got you!');
+        damagePlayer(TUADO_LAVA_DMG, 'Splat! Tuado\'s lava got you!',
+          angleDiff(angleTo(p.x, p.y, l.tx, l.ty), p.dir));
       }
     } else {
       l.x = l.sx + (l.tx - l.sx) * l.t;
       l.y = l.sy + (l.ty - l.sy) * l.t;
+      l.z = 0.15 + Math.sin(l.t * Math.PI) * 0.95; // arc through the air, then land
+      l.trail.unshift({ x: l.x, y: l.y, z: l.z });  // short fading trail
+      if (l.trail.length > 3) l.trail.pop();
     }
   }
 }

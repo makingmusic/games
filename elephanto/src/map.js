@@ -11,7 +11,7 @@ var MAP = [
   'ooooooo##AAAAAA#ssssss#ooooooo', // 5
   'ooooooo##AAAAAA#ssssss#ooooooo', // 6
   'ooooooo##AAAAAA#ssssss#ooooooo', // 7
-  'ooooooo#.##.######.####ooooooo', // 8  arena door col 11, stash door col 18
+  'ooooooo#.##..#####.####ooooooo', // 8  arena door cols 11-12, stash door col 18
   'ooooooo#..............#ooooooo', // 9  main hall
   'ooooooo#..........gggg#ooooooo', // 10 gym door col 17
   'ooooooo#.........#gggg#ooooooo', // 11

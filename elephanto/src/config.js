@@ -43,4 +43,4 @@ var WEAPON_ORDER = ['fists', 'bat', 'pipe'];
 var SPAWN_ENTRANCE = { x: 14.5, y: 16.3, dir: -Math.PI / 2 };
 var STASH_POS = { x: 17.5, y: 4.0 };   // weapon stash crate (interactable)
 var BENCH_POS = { x: 19.5, y: 12.0 };  // gym training bench (interactable)
-var ARENA_DOOR = { x: 11.5, y: 8.5 };  // waypoint in/out of the arena
+var ARENA_DOOR = { x: 12.0, y: 8.5 };  // waypoint in/out of the arena (2-wide door)

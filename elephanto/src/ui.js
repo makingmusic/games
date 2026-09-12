@@ -16,6 +16,8 @@ UI.init = function () {
     lookHint: document.getElementById('look-hint'),
     objective: document.getElementById('objective'),
     guideArrow: document.getElementById('guide-arrow'),
+    lavaArrow: document.getElementById('lava-arrow'),
+    controlsChip: document.getElementById('controls-chip'),
     healthWrap: document.getElementById('health-wrap'),
     bossCoffee: document.getElementById('boss-coffee'),
     bossTea: document.getElementById('boss-tea'),
@@ -64,14 +66,26 @@ UI.update = function () {
   // persistent objective line (distinct from Uncle Pete's quest text)
   el.objective.textContent = Game.objectiveText();
 
-  // wayfinding arrow toward the arena (hidden while inside it / dead / won)
+  // wayfinding arrow: toward the arena when outside it, toward the nearest
+  // live boss when inside (so a boss can never be "lost" in the arena)
   var ga = Game.state === 'playing' && !p.dead ? guideAngle() : null;
+  if (ga === null && Game.state === 'playing' && !p.dead) ga = bossAngle();
   if (ga !== null) {
     el.guideArrow.classList.remove('hidden');
     el.guideArrow.style.transform =
       'translateX(-50%) rotate(' + (ga * 180 / Math.PI - 90) + 'deg)';
   } else {
     el.guideArrow.classList.add('hidden');
+  }
+
+  // lava threat arrow: points at the nearest inbound lava blob
+  var la = Game.state === 'playing' && !p.dead ? lavaThreatAngle() : null;
+  if (la !== null) {
+    el.lavaArrow.classList.remove('hidden');
+    el.lavaArrow.style.transform =
+      'translateX(-50%) rotate(' + (la * 180 / Math.PI - 90) + 'deg)';
+  } else {
+    el.lavaArrow.classList.add('hidden');
   }
 
   el.quest.textContent = Game.currentQuestText();
@@ -95,11 +109,15 @@ UI.update = function () {
   if (World.showLookHint) {
     el.lookHint.textContent = (typeof Input !== 'undefined' && Input.touchMode)
       ? '🕹️ Left stick to MOVE · drag the right side of the screen (or hold ↺ ↻) to LOOK around'
-      : '⌨️ WASD/arrows to MOVE · drag the mouse or hold Q/E to TURN · click/space to attack';
+      : '⌨️ SPACE or CLICK to ATTACK · WASD to MOVE · drag the mouse or hold Q/E to TURN';
     el.lookHint.classList.remove('hidden');
   } else {
     el.lookHint.classList.add('hidden');
   }
+
+  // persistent desktop control chip (touch has labeled on-screen buttons)
+  el.controlsChip.classList.toggle('hidden',
+    typeof Input !== 'undefined' && Input.touchMode);
 
   el.deathOverlay.classList.toggle('hidden', !p.dead);
 };

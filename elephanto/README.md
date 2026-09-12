@@ -26,10 +26,13 @@ Pick a role at the start:
 
 **What to do** (also shown on the start screen and in the HUD objective line):
 Coffee Man and Tea Girl wait in the arena — take all 3 lives from both of
-them. A golden **➤ arrow** under the objective bar always points toward the
-arena when you're outside it, and floor signs mark the ARENA, GYM and STASH
-doors. First-time hints appear as you play (how to turn, what the arena is
-for).
+them. A golden **➤ arrow** under the objective bar always points at your
+current target: the arena when you're outside it, the nearest live boss when
+you're inside. Floor signs mark the ARENA, GYM and STASH doors, and the arena
+door is wide — both bosses are visible as you walk in. First-time hints appear
+as you play (how to turn, what the arena is for), the crosshair turns red when
+an attack will land, and a small chip at the bottom of the screen lists the
+keys on desktop.
 
 ## Controls
 
@@ -37,11 +40,13 @@ for).
 |---------|----------------------------|--------------------------------|
 | Move    | WASD / arrow keys (A/D strafe) | left virtual joystick      |
 | Look/turn | mouse drag or Q / E      | drag right half, or hold ↺ / ↻ turn buttons |
-| Attack  | click / space (hold ok)    | 👊 button                      |
+| Attack  | **SPACE** / click (hold ok) | 👊 button                     |
 | Use     | E (stash, gym bench)       | ✋ button                      |
 | Heal    | H (Protector only)         | 🩹 button (Protector only)     |
 
-A how-to-turn hint banner appears in-game until you turn for the first time.
+The crosshair turns red when a target is in attack range inside the arena.
+A how-to-turn/attack hint banner appears in-game until you first turn, and a
+key chip ("SPACE attack · E use · H heal") stays on screen on desktop.
 
 ## Tips
 
@@ -49,6 +54,10 @@ A how-to-turn hint banner appears in-game until you turn for the first time.
 - The **gym** gives a one-time permanent muscle buff (+max HP, +damage).
 - Coffee Man and Tea Girl have **linked health** — downing one hurts the other.
 - Walking **outside the base** is slow, but lava accidents can happen anywhere.
+- Tuado's lava is telegraphed: watch for his meow, the flashing **❗** over his
+  head, and the orange **➤ threat arrow** at the top of the screen pointing at
+  the inbound blob. The blob leaves a fading trail in the air and a glowing
+  splat where it lands — sidestep before it lands!
 
 ## Art assets
 
@@ -106,3 +115,4 @@ and the original mapping live in `docs/asset-prompts.md`.
 - `src/raycaster.js` — first-person renderer
 - `src/ui.js` — HUD and overlays
 - `src/main.js` — boot + game loop
+- `test/headless.js` — headless render-simulation tests (`node test/headless.js`)

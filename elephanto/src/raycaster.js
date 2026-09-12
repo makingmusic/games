@@ -91,6 +91,14 @@ Raycaster.flashSprite = function (key) {
   return Raycaster.flashCache[ck];
 };
 
+// Vertical placement of a billboard, pure and unit-tested.
+// size = (H/ty)*scale pixels tall; z = height of the sprite's bottom above
+// the floor in tiles (0 = standing on the floor, bottom exactly at the floor
+// line of its distance: H/2 + H/(2*ty)). Returns the top edge in pixels.
+function billboardY(H, ty, scale, z) {
+  return H / 2 + (H / ty) * (0.5 - scale - (z || 0));
+}
+
 // ---------- main render ----------
 
 Raycaster.render = function (ctx, W, H) {
@@ -222,7 +230,7 @@ Raycaster.render = function (ctx, W, H) {
     var screenX = (cols / 2) * (1 + tx / ty);     // in columns
     var size = Math.abs(H / ty) * s.scale;        // in pixels
     var halfC = (size / COL) / 2;                 // half-width in columns
-    var drawY = (H - size) / 2 + (1 - s.scale) * (H / ty) * 0.5; // feet on the floor
+    var drawY = billboardY(H, ty, s.scale, s.z);  // z lifts flying sprites off the floor
     var startC = Math.max(0, Math.floor(screenX - halfC));
     var endC = Math.min(cols - 1, Math.ceil(screenX + halfC));
     var centerC = Math.max(0, Math.min(cols - 1, Math.round(screenX)));
@@ -263,6 +271,20 @@ Raycaster.render = function (ctx, W, H) {
       ctx.fillStyle = '#ffe9a8';
       ctx.fillText(tag, screenX * COL, drawY - fontSize * 0.6);
     }
+
+    // Tuado's lava wind-up telegraph: unmissable flashing ❗ over his head
+    if (s.ent && s.ent.telegraph && visible) {
+      var tSize = Math.max(18, Math.min(34, size * 0.45));
+      ctx.font = 'bold ' + tSize + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.globalAlpha = 0.65 + 0.35 * Math.sin(now * 12);
+      ctx.strokeStyle = 'rgba(0,0,0,.85)';
+      ctx.lineWidth = 4;
+      ctx.strokeText('❗', screenX * COL, drawY - tSize * 0.4);
+      ctx.fillStyle = '#ff5030';
+      ctx.fillText('❗', screenX * COL, drawY - tSize * 0.4);
+      ctx.globalAlpha = 1;
+    }
   }
 
   Raycaster.drawWeaponView(ctx, W, H);
@@ -275,18 +297,29 @@ Raycaster.render = function (ctx, W, H) {
     ctx.fillRect(0, 0, W, H);
   }
 
-  // hurt flash
+  // directional hurt vignette: strongest on the side the hit came from
   if (p.flash > 0) {
-    ctx.fillStyle = 'rgba(200,30,30,' + Math.min(0.45, p.flash) + ')';
-    ctx.fillRect(0, 0, W, H);
+    var fa = Math.min(0.45, p.flash);
+    if (p.flashFrom === null || p.flashFrom === undefined) {
+      ctx.fillStyle = 'rgba(200,30,30,' + fa + ')';
+      ctx.fillRect(0, 0, W, H);
+    } else {
+      var ex = W / 2 + Math.sin(p.flashFrom) * W * 0.55;
+      var ey = H / 2 - Math.cos(p.flashFrom) * H * 0.55;
+      var fg = ctx.createRadialGradient(ex, ey, 10, ex, ey, Math.max(W, H) * 0.75);
+      fg.addColorStop(0, 'rgba(220,40,20,' + Math.min(0.65, fa + 0.2) + ')');
+      fg.addColorStop(1, 'rgba(220,40,20,0)');
+      ctx.fillStyle = fg;
+      ctx.fillRect(0, 0, W, H);
+    }
   }
 };
 
 Raycaster.collectSprites = function (now) {
   var p = World.player;
   var list = [];
-  function add(x, y, sprite, scale, alpha, ent) {
-    list.push({ x: x, y: y, sprite: sprite, scale: scale, alpha: alpha, ent: ent || null,
+  function add(x, y, sprite, scale, alpha, ent, z) {
+    list.push({ x: x, y: y, sprite: sprite, scale: scale, alpha: alpha, ent: ent || null, z: z || 0,
                 d: (x - p.x) * (x - p.x) + (y - p.y) * (y - p.y) });
   }
 
@@ -313,16 +346,21 @@ Raycaster.collectSprites = function (now) {
     if (m.hp > 0) add(m.x, m.y, 'minion', m.scale, 1, m);
   }
 
-  // lava blobs in flight (arc: rise then fall)
+  // lava blobs in flight: big, bright, arcing through the air (z), with a
+  // short fading trail of ghosts so the arc can be traced back to Tuado
   for (i = 0; i < World.lava.length; i++) {
     var l = World.lava[i];
-    add(l.x, l.y, 'lava', 0.2 + 0.18 * Math.sin(l.t * Math.PI));
+    for (var j = l.trail.length - 1; j >= 0; j--) {
+      var tr = l.trail[j];
+      add(tr.x, tr.y, 'lava', 0.2, Math.max(0.08, 0.32 - j * 0.09), null, tr.z);
+    }
+    add(l.x, l.y, 'lava', 0.3 + 0.22 * Math.sin(l.t * Math.PI), 1, null, l.z);
   }
 
-  // splash effects (fade out)
+  // splash effects / ground splat decals (fade out)
   for (i = 0; i < World.effects.length; i++) {
     var e = World.effects[i];
-    add(e.x, e.y, e.sprite, e.scale * (1.6 - e.t), Math.max(0, e.t * 2));
+    add(e.x, e.y, e.sprite, e.scale * (1.6 - e.t), Math.min(1, Math.max(0, e.t * 2)));
   }
 
   // ambient dust motes drifting indoors
@@ -375,15 +413,27 @@ Raycaster.drawWeaponView = function (ctx, W, H) {
 Raycaster.drawCrosshair = function (ctx, W, H) {
   var p = World.player;
   var s = Math.max(2, W / 500);
-  ctx.fillStyle = 'rgba(255,255,255,.8)';
-  ctx.fillRect(W / 2 - s / 2, H / 2 - s / 2, s, s);
+  // highlight when the crosshair is over a hittable target (in range, in arena)
+  var onTarget = Game.state === 'playing' && !p.dead &&
+    !!findMeleeTarget(p, WEAPONS[p.weapon], liveBadGuys());
+  if (onTarget) {
+    var m = s * 4;
+    ctx.strokeStyle = '#ff5252';
+    ctx.lineWidth = Math.max(2, s / 1.2);
+    ctx.strokeRect(W / 2 - m, H / 2 - m, m * 2, m * 2);
+    ctx.fillStyle = '#ff5252';
+    ctx.fillRect(W / 2 - s, H / 2 - s, s * 2, s * 2);
+  } else {
+    ctx.fillStyle = 'rgba(255,255,255,.8)';
+    ctx.fillRect(W / 2 - s / 2, H / 2 - s / 2, s, s);
+  }
   if (p.hitMarkerT > 0) {
-    var m = s * 2.5;
+    var hm = s * 2.5;
     ctx.strokeStyle = '#ff5252';
     ctx.lineWidth = Math.max(2, s / 1.5);
     ctx.beginPath();
-    ctx.moveTo(W / 2 - m, H / 2 - m); ctx.lineTo(W / 2 + m, H / 2 + m);
-    ctx.moveTo(W / 2 + m, H / 2 - m); ctx.lineTo(W / 2 - m, H / 2 + m);
+    ctx.moveTo(W / 2 - hm, H / 2 - hm); ctx.lineTo(W / 2 + hm, H / 2 + hm);
+    ctx.moveTo(W / 2 + hm, H / 2 - hm); ctx.lineTo(W / 2 - hm, H / 2 + hm);
     ctx.stroke();
   }
 };
