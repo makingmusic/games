@@ -127,5 +127,90 @@ World.minions[0].hp = 0; // and no minion in range
 check('crosshair finds no target out of range',
   findMeleeTarget(World.player, WEAPONS.fists, liveBadGuys()) === null);
 
+// ---------- PNG swap transform regression (the invisible-bodies bug) ----------
+// makeSprite scales the context 512/96 for the procedural art. applyPNG draws
+// in device pixels — if that transform is still active, the PNG lands ~5.3x
+// magnified, ~94% off-canvas, and the sprite goes blank. Track the effective
+// (transform-applied) destination rect through the REAL makeSprite+applyPNG.
+(function () {
+  var m = [1, 0, 0, 1, 0, 0]; // tracked 2D transform
+  var drawCalls = [];
+  var ctxTarget = {
+    scale: function (a, b) { m = [m[0] * a, m[1] * b, m[2] * a, m[3] * b, m[4], m[5]]; },
+    setTransform: function (a, b, c, d, e, f) { m = [a, b, c, d, e, f]; },
+    createRadialGradient: fakeGradient, createLinearGradient: fakeGradient,
+    getImageData: function () { throw new Error('tainted'); }, // force skip-trim path
+    drawImage: function () {
+      if (arguments.length === 9) {
+        var a = arguments;
+        drawCalls.push({ ex: a[5] * m[0], ey: a[6] * m[3], ew: a[7] * m[0], eh: a[8] * m[3] });
+      }
+    }
+  };
+  var ctxProxy = new Proxy(ctxTarget, {
+    get: function (o, p) { return p in o ? o[p] : function () {}; },
+    set: function () { return true; }
+  });
+  var canvas = { key: 'coffeeMan', width: 0, height: 0, getContext: function () { return ctxProxy; } };
+  var oldCreate = global.document.createElement;
+  global.document.createElement = function () { return canvas; };
+
+  SPRITES.coffeeMan = null;
+  var c = makeSprite(drawCoffeeMan); // real placeholder draw, leaves transform
+  SPRITES.coffeeMan = c;
+  applyPNG('coffeeMan', { naturalWidth: 512, naturalHeight: 512 });
+
+  global.document.createElement = oldCreate;
+  check('applyPNG drew the PNG', drawCalls.length === 1);
+  if (drawCalls.length === 1) {
+    var r = drawCalls[0];
+    check('PNG dest rect fits inside the 512px canvas (transform reset)',
+      r.ex >= -1 && r.ey >= -1 && r.ex + r.ew <= 513 && r.ey + r.eh <= 513);
+  }
+})();
+
+// ---------- dest-rect sweep: every sprite type at several distances ----------
+// Records real drawImage destination rects from the real render pass and
+// asserts every sprite is drawn on-screen with a plausible size.
+(function () {
+  var W2 = 2000, H2 = 1389; // iPad-like backing store
+  var calls = [];
+  var ctx = recordingCtx({});
+  ctx.drawImage = function (img, sx, sy, sw, sh, dx, dy, dw, dh) {
+    calls.push({ key: img.key, dx: dx, dy: dy, dw: dw, dh: dh });
+  };
+
+  function single(spriteKey, worldFn, label, minH) {
+    var dists = [1.5, 3, 6];
+    for (var di = 0; di < dists.length; di++) {
+      var dd = dists[di];
+      Game.newGame('kid'); Game.state = 'playing';
+      World.player.x = 12.0; World.player.y = 14.0; World.player.dir = -Math.PI / 2;
+      worldFn(dd);
+      calls.length = 0;
+      Raycaster.render(ctx, W2, H2);
+      var got = calls.filter(function (c) { return c.key === spriteKey; });
+      check(label + ' visible at ' + dd + ' tiles (' +
+            (got.length ? got[0].dh.toFixed(0) + 'px' : 'NOT DRAWN') + ')',
+            got.length > 0 && got.every(function (c) {
+              return isFinite(c.dx) && isFinite(c.dy) && isFinite(c.dw) && isFinite(c.dh) &&
+                     c.dh > minH && c.dw > 0 &&
+                     c.dx > -c.dw && c.dx < W2 && c.dy + c.dh > 0 && c.dy < H2;
+            }));
+    }
+  }
+
+  single('coffeeMan', function (dd) { World.coffee.x = 12.0; World.coffee.y = 14.0 - dd; }, 'Coffee Man', 20);
+  single('teaGirl', function (dd) { World.tea.x = 12.0; World.tea.y = 14.0 - dd; }, 'Tea Girl', 20);
+  single('pete', function (dd) { World.pete.x = 12.0; World.pete.y = 14.0 - dd; }, 'Uncle Pete', 20);
+  single('tuado', function (dd) { World.tuado.x = 12.0; World.tuado.y = 14.0 - dd; }, 'Tuado', 20);
+  single('minion', function (dd) { World.minions[0].x = 12.0; World.minions[0].y = 14.0 - dd; }, 'minion', 20);
+  single('crate', function (dd) { STASH_POS.x = 12.0; STASH_POS.y = 14.0 - dd; }, 'stash crate', 15);
+  single('bench', function (dd) { BENCH_POS.x = 12.0; BENCH_POS.y = 14.0 - dd; }, 'gym bench', 15);
+  single('signArena', function (dd) { SIGNS[0].x = 12.0; SIGNS[0].y = 14.0 - dd; }, 'arena sign', 15);
+  single('bat', function (dd) { World.pickups[0].x = 12.0; World.pickups[0].y = 14.0 - dd; }, 'bat pickup', 10);
+  single('lava', function (dd) { World.lava.push({ x: 12.0, y: 14.0 - dd, z: 0.8, t: 0.45, trail: [] }); }, 'flying lava', 10);
+})();
+
 console.log(failures === 0 ? '\nALL HEADLESS RENDER TESTS PASSED' : '\n' + failures + ' FAILURES');
 process.exit(failures ? 1 : 0);

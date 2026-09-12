@@ -11,6 +11,9 @@ function makeSprite(drawFn) {
   var g = c.getContext('2d');
   g.scale(SPRITE_SIZE / 96, SPRITE_SIZE / 96); // procedural art drawn on a 96 grid
   drawFn(g);
+  // The transform persists on the context — reset it, or the PNG swap in
+  // applyPNG (which draws in device pixels) would be scaled 5.3x off-canvas.
+  g.setTransform(1, 0, 0, 1, 0, 0);
   return c;
 }
 
@@ -282,6 +285,8 @@ function applyPNG(spriteKey, img) {
   var target = SPRITES[spriteKey];
   if (!target || !img.naturalWidth) return;
   var g = target.getContext('2d');
+  // placeholder drawing leaves a scaled transform on this context — reset it
+  if (g.setTransform) g.setTransform(1, 0, 0, 1, 0, 0);
 
   var sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
   try {
