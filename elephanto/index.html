@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Elephanto</title>
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
+  <link rel="icon" type="image/png" href="assets/icon-180.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- HUD -->
+  <div id="vignette"></div>
+  <div id="hud" class="hidden">
+    <div id="hud-top-left">
+      <div id="health-wrap">
+        <div id="health-bar"></div>
+        <span id="health-num">100</span>
+      </div>
+      <div id="quest"></div>
+    </div>
+    <div id="hud-bosses">
+      <div class="boss" id="boss-coffee">
+        <b>☕ COFFEE MAN</b>
+        <span class="lives">❤❤❤</span>
+        <div class="boss-hp"><div></div></div>
+      </div>
+      <div class="boss" id="boss-tea">
+        <b>🍵 TEA GIRL</b>
+        <span class="lives">❤❤❤</span>
+        <div class="boss-hp"><div></div></div>
+      </div>
+    </div>
+    <div id="objective"></div>
+    <div id="guide-arrow" class="hidden">➤</div>
+    <div id="hud-top-right">
+      <div id="hud-role"></div>
+      <div id="hud-weapon"></div>
+      <div id="hud-medkit"></div>
+      <div id="hud-deaths"></div>
+    </div>
+    <div id="toast" class="hidden"></div>
+    <div id="look-hint" class="hidden"></div>
+  </div>
+
+  <!-- Touch controls -->
+  <div id="touch-ui" class="hidden">
+    <div id="stick"><div id="stick-knob"></div></div>
+    <div id="turn-buttons">
+      <div class="tbtn" id="btn-turn-left">↺<span>Turn</span></div>
+      <div class="tbtn" id="btn-turn-right">↻<span>Turn</span></div>
+    </div>
+    <div id="touch-buttons">
+      <div class="tbtn" id="btn-heal">🩹<span>Heal</span></div>
+      <div class="tbtn" id="btn-interact">✋<span>Use</span></div>
+      <div class="tbtn big" id="btn-attack">👊<span>Attack</span></div>
+    </div>
+  </div>
+
+  <!-- Death banner -->
+  <div id="death-overlay" class="hidden">
+    <div>💥 Bonked!</div>
+    <p>Respawning at the entrance…</p>
+  </div>
+
+  <!-- Win screen -->
+  <div id="win-overlay" class="overlay hidden">
+    <h1>🏆 YOU WIN!</h1>
+    <div id="win-buddies">
+      <img src="assets/uncle-pete.png" alt="Uncle Pete" onerror="this.classList.add('hidden')">
+      <img src="assets/tuado.png" alt="Tuado the cat" onerror="this.classList.add('hidden')">
+    </div>
+    <p>Coffee Man and Tea Girl are defeated.<br>The evil base is safe again!</p>
+    <p id="win-stats"></p>
+    <button class="big-btn" onclick="location.reload()">Play again</button>
+  </div>
+
+  <!-- Start menu / role select -->
+  <div id="menu-overlay" class="overlay">
+    <h1 id="title-text">🐘 ELEPHANTO</h1>
+    <img id="logo" src="assets/logo.png" alt="ELEPHANTO"
+         onload="document.getElementById('title-text').classList.add('sr-only')"
+         onerror="this.classList.add('hidden')">
+    <div class="brief metal-panel">
+      <p>☕🍵 <b>Coffee Man and Tea Girl</b> are waiting in the <b>ARENA</b>.</p>
+      <p>Take all <b>3 lives</b> from <b>BOTH</b> of them to win.</p>
+      <p>Fighting only works <b>inside the arena</b> — step out to heal!</p>
+    </div>
+    <p>Choose your role:</p>
+    <div id="role-buttons">
+      <button class="big-btn" id="role-kid">🧒 Kid<br><small>Starts with bare fists. Scrappy!</small></button>
+      <button class="big-btn" id="role-protector">🛡️ Protector<br><small>Starts with a bat and a medkit.</small></button>
+    </div>
+    <p class="controls-help">
+      🖥️ WASD/arrows move · mouse drag or Q/E turn · click/space attack · E use · H heal<br>
+      📱 Left stick moves · drag right side to look (or hold ↺ ↻) · on-screen buttons
+    </p>
+  </div>
+
+  <script src="src/config.js"></script>
+  <script src="src/sound.js"></script>
+  <script src="src/map.js"></script>
+  <script src="src/sprites.js"></script>
+  <script src="src/entities.js"></script>
+  <script src="src/input.js"></script>
+  <script src="src/ui.js"></script>
+  <script src="src/game.js"></script>
+  <script src="src/raycaster.js"></script>
+  <script src="src/main.js"></script>
+</body>
+</html>
