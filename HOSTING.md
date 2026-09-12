@@ -140,5 +140,6 @@ offline) so mobile players can Add to Home Screen without store review.
 |------------|-------------|------------|--------------|
 | 99 Nights  | `99nights/` | GitHub Pages: https://makingmusic.github.io/games/99nights/ | not yet |
 | Escape the Cat Inside the Forest | `escapethecatinsidetheforest/` | GitHub Pages: https://makingmusic.github.io/games/escapethecatinsidetheforest/ | not yet |
+| Elephanto | `elephanto/` | GitHub Pages: https://makingmusic.github.io/games/elephanto/ | not yet |
 
 Update this table as each game ships somewhere.
