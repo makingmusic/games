@@ -22,11 +22,11 @@ Give this whole file to an asset-generation agent (or copy one prompt block at a
 ## Asset list
 
 ### 1. `coffee-man.png` — BAD GUY BOSS
-- Theme colors: coffee brown robe `#6b4423`, dark brown belt `#503014`, tan skin `#a9744f`, cream cup-hat `#f0e6d2`, **yellow staff `#ffd23a`**.
+- Theme colors: purple robe `#5e35a0`, dark purple belt `#3f2268`, tan skin `#a9744f`, black cup-hat `#23262d`, **yellow staff `#ffd23a`**. (Recolored post-generation: robe purple, hat and shoes black.)
 ```
 Flat 2D cartoon game sprite, full body, front-facing, transparent background.
-A grumpy cartoon villain called Coffee Man: a stout man in a coffee-brown robe
-with a dark brown belt, wearing a white coffee cup as a hat with a handle and a
+A grumpy cartoon villain called Coffee Man: a stout man in a purple robe
+with a dark purple belt, wearing a black coffee cup as a hat with a handle and a
 wisp of steam. Angry eyebrows, frowning face, tan skin. He holds a tall bright
 YELLOW wooden staff with a round knob on top in one hand, planted on the ground.
 Bold outlines, bright flat colors, kid-friendly video game style. The character

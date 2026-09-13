@@ -52,11 +52,11 @@ function eyes(g, x, y, gap, angry) {
 
 function drawCoffeeMan(g) {
   staff(g, 76, 26, 84, 92);                    // yellow staff
-  rrect(g, 22, 40, 48, 54, 12, '#6b4423');     // coffee-brown robe
-  rrect(g, 22, 62, 48, 8, 4, '#503014');       // belt
+  rrect(g, 22, 40, 48, 54, 12, '#5e35a0');     // purple robe
+  rrect(g, 22, 62, 48, 8, 4, '#3f2268');       // belt
   circle(g, 46, 28, 17, '#a9744f');            // head
-  rrect(g, 33, 2, 26, 14, 4, '#f0e6d2');       // coffee-cup hat
-  g.strokeStyle = '#f0e6d2'; g.lineWidth = 4;  // cup handle
+  rrect(g, 33, 2, 26, 14, 4, '#23262d');       // black coffee-cup hat
+  g.strokeStyle = '#23262d'; g.lineWidth = 4;  // cup handle
   g.beginPath(); g.arc(61, 9, 5, -1.2, 1.2); g.stroke();
   g.strokeStyle = 'rgba(255,255,255,.7)'; g.lineWidth = 2; // steam
   g.beginPath(); g.moveTo(42, -2); g.quadraticCurveTo(44, -6, 46, -2); g.stroke();
@@ -75,6 +75,7 @@ function drawTeaGirl(g) {
   g.beginPath(); g.arc(56, 24, 16, Math.PI, 0); g.fill();
   circle(g, 56, 8, 7, '#2e6b3a');              // bun
   circle(g, 56, 8, 3, '#ffd23a');              // bun pin
+  rrect(g, 38, 22, 36, 17, 8, '#2e6b3a');      // green bandit mask
   eyes(g, 56, 30, 7, true);
   g.strokeStyle = '#8a4b2a'; g.lineWidth = 3;  // smug smile
   g.beginPath(); g.arc(56, 36, 6, 0.25, Math.PI - 0.25); g.stroke();
