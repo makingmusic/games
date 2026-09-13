@@ -58,8 +58,7 @@ function drawCoffeeMan(g) {
   rrect(g, 33, 2, 26, 14, 4, '#23262d');       // black coffee-cup hat
   g.strokeStyle = '#23262d'; g.lineWidth = 4;  // cup handle
   g.beginPath(); g.arc(61, 9, 5, -1.2, 1.2); g.stroke();
-  g.strokeStyle = 'rgba(255,255,255,.7)'; g.lineWidth = 2; // steam
-  g.beginPath(); g.moveTo(42, -2); g.quadraticCurveTo(44, -6, 46, -2); g.stroke();
+  rrect(g, 27, 18, 38, 16, 8, '#5e35a0');      // purple bandit mask
   eyes(g, 46, 26, 7, true);                    // angry eyes
   g.strokeStyle = '#3a2312'; g.lineWidth = 3;  // frown
   g.beginPath(); g.arc(46, 40, 6, Math.PI * 1.15, Math.PI * 1.85); g.stroke();
@@ -82,16 +81,18 @@ function drawTeaGirl(g) {
 }
 
 function drawPete(g) {
-  rrect(g, 20, 42, 56, 52, 14, '#3a6ea5');     // big blue overalls
-  rrect(g, 30, 42, 10, 26, 4, '#2b5580');      // straps
-  rrect(g, 56, 42, 10, 26, 4, '#2b5580');
+  rrect(g, 20, 46, 56, 32, 14, '#8a9099');     // plain gray tee
+  rrect(g, 24, 72, 48, 22, 8, '#3f4650');      // dark pants
   circle(g, 48, 26, 18, '#f2c9a0');            // head
-  g.fillStyle = '#f4f4f4';                     // white beard
-  g.beginPath(); g.arc(48, 34, 14, 0.1, Math.PI - 0.1); g.fill();
-  rrect(g, 32, 4, 32, 10, 5, '#c0392b');       // red cap
-  circle(g, 48, 5, 4, '#e74c3c');
-  eyes(g, 48, 24, 8, false);
-  circle(g, 48, 30, 3, '#e8a58a');             // nose
+  g.fillStyle = '#f4f4f4';                     // white hair
+  g.beginPath(); g.arc(48, 20, 17, Math.PI, 0); g.fill();
+  g.beginPath();                               // long beard down to the chest
+  g.moveTo(33, 32); g.quadraticCurveTo(30, 62, 48, 72);
+  g.quadraticCurveTo(66, 62, 63, 32); g.closePath(); g.fill();
+  g.strokeStyle = '#20242c'; g.lineWidth = 4;  // black ring floating above
+  g.beginPath(); g.ellipse(48, 4, 13, 4, 0, 0, Math.PI * 2); g.stroke();
+  rrect(g, 33, 21, 30, 9, 4, '#20242c');       // sunglasses hooked on his ears
+  circle(g, 48, 31, 3, '#e8a58a');             // nose
 }
 
 function drawTuado(g) {

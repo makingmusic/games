@@ -1,11 +1,11 @@
 // Elephanto — entity factories and world construction. Pure data, no DOM.
 
-function makeBoss(id, name, sprite, x, y) {
+function makeBoss(id, name, sprite, x, y, tall) {
   return {
     kind: 'boss', id: id, name: name, sprite: sprite,
     x: x, y: y, postX: x, postY: y, dir: Math.PI / 2,
     hp: BOSS_LIFE_HP, maxHp: BOSS_LIFE_HP, lives: BOSS_LIVES,
-    attackCd: 0, flash: 0, scale: 0.85
+    attackCd: 0, flash: 0, scale: 0.85, tall: tall || 1, spin: false
   };
 }
 
@@ -40,7 +40,7 @@ function createWorld(role) {
       flashFrom: null, // bearing of the last hit, for the directional vignette
       hintT: 0
     },
-    coffee: makeBoss('coffee', 'Coffee Man', 'coffeeMan', 10.5, 5.0),
+    coffee: makeBoss('coffee', 'Coffee Man', 'coffeeMan', 10.5, 5.0, 1.3),
     tea: makeBoss('tea', 'Tea Girl', 'teaGirl', 13.5, 5.0),
     pete: {
       kind: 'pete', name: 'Uncle Pete', sprite: 'pete',

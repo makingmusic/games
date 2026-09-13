@@ -22,12 +22,13 @@ Give this whole file to an asset-generation agent (or copy one prompt block at a
 ## Asset list
 
 ### 1. `coffee-man.png` — BAD GUY BOSS
-- Theme colors: purple robe `#5e35a0`, dark purple belt `#3f2268`, tan skin `#a9744f`, black cup-hat `#23262d`, **yellow staff `#ffd23a`**. (Recolored post-generation: robe purple, hat and shoes black.)
+- Theme colors: purple robe `#5e35a0`, dark purple belt `#3f2268`, tan skin `#a9744f`, black cup-hat `#23262d`, purple mask `#5e35a0`, **yellow staff `#ffd23a`**. (Edited post-generation: robe purple, hat and shoes black, steam removed, purple bandit mask added; rendered 1.3x taller in-game.)
 ```
 Flat 2D cartoon game sprite, full body, front-facing, transparent background.
 A grumpy cartoon villain called Coffee Man: a stout man in a purple robe
-with a dark purple belt, wearing a black coffee cup as a hat with a handle and a
-wisp of steam. Angry eyebrows, frowning face, tan skin. He holds a tall bright
+with a dark purple belt, wearing a black coffee cup as a hat with a handle,
+and a purple bandit mask over his eyes. Angry eyebrows, frowning face, tan
+skin. He holds a tall bright
 YELLOW wooden staff with a round knob on top in one hand, planted on the ground.
 Bold outlines, bright flat colors, kid-friendly video game style. The character
 fills most of the frame, centered, standing straight.
@@ -46,14 +47,15 @@ straight, fills most of the frame.
 ```
 
 ### 3. `uncle-pete.png` — GOOD GUY ALLY (gives quests)
-- Theme colors: blue overalls `#3a6ea5`, dark blue straps `#2b5580`, white beard `#f4f4f4`, red cap `#c0392b`, skin `#f2c9a0`.
+- Theme colors: gray-striped shirt, dark slate pants `#3f4650`, white hair and long chest-length beard `#f4f4f4`, black sunglasses and black floating ring `#20242c`, skin `#f2c9a0`. (Edited post-generation: cap replaced by white hair, beard extended to the chest, overalls recolored to plain clothes, sunglasses and a black ring above his head added.)
 ```
 Flat 2D cartoon game sprite, full body, front-facing, transparent background.
-A friendly chubby old man called Uncle Pete: big blue overalls with dark blue
-straps, a round belly, a fluffy white beard, a kind smiling face, and a bright
-red baseball cap. Light skin, gentle eyes, pink nose. He looks helpful and
-warm, like a friendly grandpa mechanic. Bold outlines, bright flat colors,
-kid-friendly video game style. Centered, standing straight, fills most of the frame.
+A friendly chubby old man called Uncle Pete: a plain gray-striped shirt and
+dark pants, a round belly, a fluffy white beard reaching his chest, white hair,
+black sunglasses hooked on his ears, and a black ring floating above his head.
+Light skin, pink nose. He looks helpful and warm. Bold outlines, bright flat
+colors, kid-friendly video game style. Centered, standing straight, fills most
+of the frame.
 ```
 
 ### 4. `tuado.png` — GOOD GUY CAT (clumsy, throws lava by accident)

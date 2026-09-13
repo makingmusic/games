@@ -228,9 +228,11 @@ Raycaster.render = function (ctx, W, H) {
     if (ty <= 0.05) continue; // behind the camera
 
     var screenX = (cols / 2) * (1 + tx / ty);     // in columns
-    var size = Math.abs(H / ty) * s.scale;        // in pixels
+    var tall = (s.ent && s.ent.tall) || 1;        // vertical stretch (taller characters)
+    var size = Math.abs(H / ty) * s.scale;        // width in pixels
+    var hsize = size * tall;                      // height in pixels
     var halfC = (size / COL) / 2;                 // half-width in columns
-    var drawY = billboardY(H, ty, s.scale, s.z);  // z lifts flying sprites off the floor
+    var drawY = billboardY(H, ty, s.scale * tall, s.z);  // z lifts flying sprites off the floor
     var startC = Math.max(0, Math.floor(screenX - halfC));
     var endC = Math.min(cols - 1, Math.ceil(screenX + halfC));
     var centerC = Math.max(0, Math.min(cols - 1, Math.round(screenX)));
@@ -242,18 +244,28 @@ Raycaster.render = function (ctx, W, H) {
     if (s.ent && visible) {
       ctx.fillStyle = 'rgba(0,0,0,.32)';
       ctx.beginPath();
-      ctx.ellipse(screenX * COL, drawY + size * 0.98,
+      ctx.ellipse(screenX * COL, drawY + hsize * 0.98,
                   size * 0.34, Math.max(3, size * 0.055), 0, 0, Math.PI * 2);
       ctx.fill();
     }
 
+    // spinning fighters: squash the billboard horizontally with cos(t),
+    // mirroring on the back half of each turn — classic 2D spin
+    var spinning = s.ent && s.ent.spin;
+    var cs = spinning ? Math.cos(now * 9 + (s.ent.id === 'tea' ? 1.6 : 0)) : 1;
+
     ctx.globalAlpha = alpha;
     for (var stripeC = startC; stripeC <= endC; stripeC++) {
       if (zbuf[stripeC] <= ty) continue; // hidden behind a wall
-      var srcX = Math.floor(((stripeC - (screenX - halfC)) / (halfC * 2)) * img.width);
+      var u = (stripeC - (screenX - halfC)) / (halfC * 2);
+      if (spinning) {
+        u = 0.5 + (u - 0.5) * Math.abs(cs);
+        if (cs < 0) u = 1 - u;
+      }
+      var srcX = Math.floor(u * img.width);
       if (srcX < 0 || srcX >= img.width) continue;
       ctx.drawImage(img, srcX, 0, 1, img.height,
-        stripeC * COL, drawY, COL + 1, size);
+        stripeC * COL, drawY, COL + 1, hsize);
     }
     ctx.globalAlpha = 1;
 

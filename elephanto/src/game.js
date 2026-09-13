@@ -443,9 +443,12 @@ function updateBoss(b, dt) {
 
   if (!playerInArena && !peteInArena) {
     // nobody to fight: stroll back to post
+    b.spin = false;
     if (dist(b.x, b.y, b.postX, b.postY) > 0.4) moveToward(b, b.postX, b.postY, BOSS_SPEED * 0.5, dt, true);
     return;
   }
+
+  b.spin = true; // bosses twirl while fighting (renderer squashes the billboard)
 
   // pick nearest target that is inside the arena
   var target = null;
