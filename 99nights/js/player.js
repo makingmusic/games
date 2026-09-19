@@ -7,13 +7,25 @@ const Player = (() => {
     if (p.iframes > 0) p.iframes -= dt;
 
     let mx = 0, my = 0;
-    if (Input.down('up')) my -= 1;
-    if (Input.down('down')) my += 1;
-    if (Input.down('left')) mx -= 1;
-    if (Input.down('right')) mx += 1;
-    const tv = Input.stick();
-    mx += tv.x;
-    my += tv.y;
+    if (CFG.FIRST_PERSON) {
+      p.face += Input.look.x * 0.0029;
+      G.pitch = Utils.clamp((G.pitch || 0) - Input.look.y * 0.0021, -0.45, 0.45);
+      const turn = (Input.down('turnR') ? 1 : 0) - (Input.down('turnL') ? 1 : 0);
+      p.face += turn * 2.6 * dt;
+      const tv = Input.stick();
+      const fwd = (Input.down('up') ? 1 : 0) - (Input.down('down') ? 1 : 0) - tv.y;
+      const str = (Input.down('right') ? 1 : 0) - (Input.down('left') ? 1 : 0) + tv.x;
+      mx = Math.cos(p.face) * fwd - Math.sin(p.face) * str;
+      my = Math.sin(p.face) * fwd + Math.cos(p.face) * str;
+    } else {
+      if (Input.down('up')) my -= 1;
+      if (Input.down('down')) my += 1;
+      if (Input.down('left')) mx -= 1;
+      if (Input.down('right')) mx += 1;
+      const tv = Input.stick();
+      mx += tv.x;
+      my += tv.y;
+    }
     let ml = Math.hypot(mx, my);
     if (ml > 1) { mx /= ml; my /= ml; ml = 1; }
     else if (ml < 0.18) { mx = 0; my = 0; ml = 0; }
@@ -25,12 +37,14 @@ const Player = (() => {
       p.x += mx * spd * dt;
       p.y += my * spd * dt;
     }
-    const mouseRecent = performance.now() - Input.mouse.lastMoveT < 2500;
-    if (mouseRecent) {
-      const mw = Game.mouseWorld();
-      p.face = Utils.ang(p.x, p.y, mw.x, mw.y);
-    } else if (p.moving) {
-      p.face = Math.atan2(my, mx);
+    if (!CFG.FIRST_PERSON) {
+      const mouseRecent = performance.now() - Input.mouse.lastMoveT < 2500;
+      if (mouseRecent) {
+        const mw = Game.mouseWorld();
+        p.face = Utils.ang(p.x, p.y, mw.x, mw.y);
+      } else if (p.moving) {
+        p.face = Math.atan2(my, mx);
+      }
     }
 
     p.x += p.kbx * dt;

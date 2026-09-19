@@ -284,13 +284,28 @@ const UI = (() => {
       ctx.textAlign = 'center';
       ctx.fillStyle = '#fff';
       ctx.fillText('🦌 THE DEER', vw / 2, 101);
-      const sx = G.deer.x - G.cam.x, sy = G.deer.y - G.cam.y;
-      if (sx < 30 || sx > vw - 30 || sy < 30 || sy > vh - 30) {
-        const cx = Utils.clamp(sx, 50, vw - 50), cy = Utils.clamp(sy, 60, vh - 60);
-        const a = Utils.ang(vw / 2, vh / 2, sx, sy);
+      let showArrow = true, ax = 0, ay = 0, aa = 0;
+      if (CFG.FIRST_PERSON) {
+        const pr = FP.project(G.deer.x, G.deer.y);
+        const b = pr ? pr.bearing : Utils.angDiff(G.player.face, Utils.ang(G.player.x, G.player.y, G.deer.x, G.deer.y));
+        if (pr && pr.on && pr.sx > 60 && pr.sx < vw - 60 && pr.sy > 70 && pr.sy < vh - 80 && pr.F < 1400) showArrow = false;
+        const rad = Math.min(vw, vh) * 0.36;
+        ax = vw / 2 + Math.cos(b) * rad;
+        ay = vh / 2 + Math.sin(b) * rad * 0.72;
+        aa = b;
+      } else {
+        const sx = G.deer.x - G.cam.x, sy = G.deer.y - G.cam.y;
+        if (sx >= 30 && sx <= vw - 30 && sy >= 30 && sy <= vh - 30) showArrow = false;
+        else {
+          const cx = Utils.clamp(sx, 50, vw - 50), cy = Utils.clamp(sy, 60, vh - 60);
+          const a = Utils.ang(vw / 2, vh / 2, sx, sy);
+          ax = cx; ay = cy; aa = a;
+        }
+      }
+      if (showArrow) {
         ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(a);
+        ctx.translate(ax, ay);
+        ctx.rotate(aa);
         ctx.fillStyle = '#e53935';
         ctx.beginPath();
         ctx.moveTo(20, 0);
@@ -302,7 +317,7 @@ const UI = (() => {
         Utils.font(ctx, 20);
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('🦌', cx - Math.cos(a) * 36, cy - Math.sin(a) * 36);
+        ctx.fillText('🦌', ax - Math.cos(aa) * 36, ay - Math.sin(aa) * 36);
       }
     }
 
@@ -372,7 +387,8 @@ const UI = (() => {
     ctx.fillStyle = '#ffe082';
     ctx.fillText('⏸ Paused', vw / 2, vh / 2 - 170);
     const lines = [
-      'Move — WASD / Arrow keys',
+      'Move — WASD (arrows turn)',
+      'Look — mouse (click to capture)',
       'Chop & attack — SPACE or click',
       'Interact — E  ·  Eat — F',
       'Upgrade fire — U (stand at fire)',
@@ -450,7 +466,8 @@ const UI = (() => {
         ctx.fillText('✅ Following you home!', vw / 2 + 305, y);
       } else {
         const cave = G.caves.find((c) => c.kidId === kid.id);
-        const a = Utils.ang(p.x, p.y, cave.x, cave.y);
+        let a = Utils.ang(p.x, p.y, cave.x, cave.y);
+        if (CFG.FIRST_PERSON) a = Utils.angDiff(p.face, a) - Math.PI / 2;
         arrow(ctx, vw / 2 + 130, y, a, 20);
         Utils.font(ctx, 24);
         ctx.fillStyle = '#ffd54f';

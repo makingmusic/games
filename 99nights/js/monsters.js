@@ -58,6 +58,7 @@ const Monsters = (() => {
   }
 
   function drawBadge(ctx, y, name, face, emo) {
+    if (window.__FP) return;
     Utils.font(ctx, 13);
     const tw = ctx.measureText(name).width;
     const w = tw + 66;
@@ -762,7 +763,7 @@ const Monsters = (() => {
       ctx.arc(0, 0, m.r, 0, TAU);
       ctx.fill();
     }
-    if (m.hp < m.maxHp && !m.fleeing) {
+    if (!window.__FP && m.hp < m.maxHp && !m.fleeing) {
       const w = m.r * 1.6;
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
       ctx.fillRect(-w / 2, -m.r - 14, w, 6);
@@ -993,7 +994,7 @@ const Monsters = (() => {
       ctx.ellipse(0, 0, K.r, K.r * 0.82, 0, 0, TAU);
       ctx.fill();
     }
-    if (!K.boss && m.hp < m.maxHp && !flee) {
+    if (!window.__FP && !K.boss && m.hp < m.maxHp && !flee) {
       const w = K.r * 1.6;
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
       ctx.fillRect(-w / 2, -K.r - 16, w, 6);
@@ -1140,7 +1141,7 @@ const Monsters = (() => {
       drawBatFallback(ctx, m, K);
     }
     ctx.restore();
-    if (m.hp < m.maxHp && !m.fleeing) {
+    if (!window.__FP && m.hp < m.maxHp && !m.fleeing) {
       const w = K.r * 1.7;
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
       ctx.fillRect(-w / 2, -foot - 8, w, 6);

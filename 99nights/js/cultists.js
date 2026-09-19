@@ -146,6 +146,7 @@ const Cultists = (() => {
   const CFACES = { deer: '🦌', deerElite: '🦌', cat: '🐱', owl: '🦉', batC: '🦇', ramC: '🐏' };
 
   function cultBadge(ctx, c) {
+    if (window.__FP) return;
     const name = CNAMES[c.type] || 'Cultist';
     const face = CFACES[c.type] || '😈';
     const emo = c.mode === 'wind' ? '😡' : (c.provoked ? '😠' : '🙂');
@@ -500,7 +501,7 @@ const Cultists = (() => {
       ctx.ellipse(0, 0, c.r * 0.9, c.r, 0, 0, TAU);
       ctx.fill();
     }
-    if (c.hp < c.maxHp) {
+    if (!window.__FP && c.hp < c.maxHp) {
       const w = c.r * 1.7;
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
       ctx.fillRect(-w / 2, -c.r - 20, w, 5);
@@ -519,5 +520,5 @@ const Cultists = (() => {
     }
   }
 
-  return { spawn, update, draw, drawOne: drawCultist, hurt, onNightfall, director, dawnSweep };
+  return { spawn, update, draw, drawOne: drawCultist, hurt, onNightfall, director, dawnSweep, CNAMES, CFACES };
 })();

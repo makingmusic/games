@@ -19,7 +19,7 @@ function newGame() {
   UI.reset();
   G.cam.x = Utils.clamp(G.player.x - window.innerWidth / 2, 0, Math.max(0, CFG.W - window.innerWidth));
   G.cam.y = Utils.clamp(G.player.y - window.innerHeight / 2, 0, Math.max(0, CFG.H - window.innerHeight));
-  UI.banner('Day 1 ☀️', 'Four kids are lost — press B to find them!');
+  UI.banner('Day 1 ☀️', CFG.FIRST_PERSON ? 'Click to grab the mouse — WASD to walk, B for the kids board!' : 'Four kids are lost — press B to find them!');
 }
 
 function mouseWorld() {
@@ -98,7 +98,7 @@ function onDeerDefeated() {
 }
 
 const HINTS = [
-  [2, 'Move with WASD or arrow keys!'],
+  [2, 'WASD moves — mouse looks around!'],
   [10, 'Chop trees with SPACE or click 🪓'],
   [26, 'Press E near bushes to pick berries 🍒'],
   [45, 'Press F to eat when hungry 🍗'],
@@ -145,6 +145,7 @@ function update(dt) {
   UI.update(dt);
   Effects.update(dt);
   handleKeys();
+  if ((G.ui.open || G.over) && document.pointerLockElement === canvas) document.exitPointerLock();
   if (G.over) {
     G.overT += dt;
     if (Input.mouse.clicked) UI.click(Input.mouse.x, Input.mouse.y);
@@ -262,6 +263,11 @@ function render() {
     UI.draw(ctx);
     return;
   }
+  if (CFG.FIRST_PERSON) {
+    FP.render(ctx, vw, vh);
+    UI.draw(ctx);
+    return;
+  }
   const shx = (Math.random() - 0.5) * G.shake;
   const shy = (Math.random() - 0.5) * G.shake;
   ctx.save();
@@ -350,6 +356,8 @@ const Game = {
   get canvas() { return canvas; },
   get vw() { return window.innerWidth; },
   get vh() { return window.innerHeight; },
+  get lctx() { return lctx; },
+  get lightC() { return lightC; },
   boot,
   newGame,
   update,

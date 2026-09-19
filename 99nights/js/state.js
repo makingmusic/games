@@ -1,5 +1,6 @@
 const CFG = {
   KID_MODE: true,
+  FIRST_PERSON: true,
   W: 3600,
   H: 3600,
   DAY_LEN: 150,
@@ -50,7 +51,7 @@ function makeState() {
     raids: { scheduled: [] },
     ui: { open: null, tradeShop: null, toasts: [], banners: [], hintsDone: {}, warnT: 0, fireWarnT: 0 },
     stats: { chopped: 0, defeated: 0, coinsEarned: 0, rescued: 0, order: 0 },
-    cam: { x: 0, y: 0 }, shake: 0,
+    cam: { x: 0, y: 0 }, shake: 0, pitch: 0,
     salesman: null,
   };
 }

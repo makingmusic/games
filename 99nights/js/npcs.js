@@ -453,5 +453,5 @@ const NPCs = (() => {
     ents.push({ y: pt.y + 20, f: () => drawTrader(ctx, pt.x, pt.y + 20, '🎩', 'Pelt Trader — powers!', Utils.dist(p.x, p.y, pt.x, pt.y) < 160) });
   }
 
-  return { SHOPS, update, pushEnts, tryInteract, currentPrompt, onNewDay, buy, kidById };
+  return { SHOPS, update, pushEnts, tryInteract, currentPrompt, onNewDay, buy, kidById, drawKid, drawTrader };
 })();

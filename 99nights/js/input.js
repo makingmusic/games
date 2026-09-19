@@ -4,8 +4,10 @@ const Input = (() => {
   const map = {
     up: ['KeyW', 'ArrowUp'],
     down: ['KeyS', 'ArrowDown'],
-    left: ['KeyA', 'ArrowLeft'],
-    right: ['KeyD', 'ArrowRight'],
+    left: ['KeyA'],
+    right: ['KeyD'],
+    turnL: ['ArrowLeft'],
+    turnR: ['ArrowRight'],
     attack: ['Space'],
     interact: ['KeyE'],
     eat: ['KeyF'],
@@ -23,6 +25,7 @@ const Input = (() => {
     num5: ['Digit5'],
   };
   const mouse = { x: 0, y: 0, down: false, clicked: false, lastMoveT: -99999 };
+  const look = { x: 0, y: 0 };
 
   let touchSeen = false;
   const STICK_R = 60;
@@ -92,6 +95,11 @@ const Input = (() => {
     });
     window.addEventListener('blur', () => held.clear());
     canvas.addEventListener('mousemove', (e) => {
+      if (document.pointerLockElement === canvas) {
+        look.x += e.movementX;
+        look.y += e.movementY;
+        return;
+      }
       const r = canvas.getBoundingClientRect();
       mouse.x = e.clientX - r.left;
       mouse.y = e.clientY - r.top;
@@ -99,6 +107,12 @@ const Input = (() => {
     });
     canvas.addEventListener('mousedown', (e) => {
       if (e.button === 0) {
+        if (CFG.FIRST_PERSON && !G.ui.open && !G.over && document.pointerLockElement !== canvas) {
+          const r = canvas.requestPointerLock();
+          if (r && r.catch) r.catch(() => {});
+          Sfx.unlock();
+          return;
+        }
         mouse.down = true;
         mouse.clicked = true;
       }
@@ -129,14 +143,14 @@ const Input = (() => {
           }
         }
         if (onBtn) continue;
-        if (pos.x < vw * 0.5 && stick.id === null) {
+        if (pos.x < vw * 0.45 && stick.id === null) {
           stick.id = t.identifier;
           stick.ox = pos.x;
           stick.oy = pos.y;
           stick.dx = 0;
           stick.dy = 0;
         } else {
-          taps[t.identifier] = { x: pos.x, y: pos.y, t: performance.now(), moved: 0 };
+          taps[t.identifier] = { x: pos.x, y: pos.y, t: performance.now(), moved: 0, look: pos.x >= vw * 0.45 };
         }
       }
     };
@@ -155,7 +169,15 @@ const Input = (() => {
         } else if (taps[t.identifier]) {
           const pos = tpos(t, canvas);
           const tp = taps[t.identifier];
-          tp.moved = Math.max(tp.moved, Utils.dist(pos.x, pos.y, tp.x, tp.y));
+          if (tp.look) {
+            look.x += (pos.x - tp.x) * 1.7;
+            look.y += (pos.y - tp.y) * 1.3;
+            tp.moved += Utils.dist(pos.x, pos.y, tp.x, tp.y);
+            tp.x = pos.x;
+            tp.y = pos.y;
+          } else {
+            tp.moved = Math.max(tp.moved, Utils.dist(pos.x, pos.y, tp.x, tp.y));
+          }
         }
       }
     };
@@ -174,7 +196,13 @@ const Input = (() => {
         const tp = taps[t.identifier];
         if (tp) {
           delete taps[t.identifier];
-          if (performance.now() - tp.t < 350 && tp.moved < 14) UI.click(tp.x, tp.y);
+          if (tp.look) {
+            if (performance.now() - tp.t < 300 && tp.moved < 14) {
+              mouse.down = true;
+              mouse.clicked = true;
+              setTimeout(() => { mouse.down = false; }, 110);
+            }
+          } else if (performance.now() - tp.t < 350 && tp.moved < 14) UI.click(tp.x, tp.y);
         }
       }
     };
@@ -228,11 +256,12 @@ const Input = (() => {
     mouse,
     pressed: (a) => pressed.has(a),
     down: (a) => held.has(a),
-    endFrame: () => pressed.clear(),
+    endFrame: () => { pressed.clear(); look.x = 0; look.y = 0; },
     clearPressed: () => pressed.clear(),
     press,
     release,
     stick: stickVec,
+    look,
     drawTouch,
     get touchSeen() { return touchSeen; },
   };

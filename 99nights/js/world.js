@@ -249,6 +249,7 @@ const World = (() => {
   }
 
   function vis(x, y, m) {
+    if (window.__FP) return true;
     const c = G.cam;
     return x > c.x - m && x < c.x + Game.vw + m && y > c.y - m && y < c.y + Game.vh + m;
   }
@@ -803,5 +804,12 @@ const World = (() => {
     }
   }
 
-  return { biomeAt, build, update, onNewDay, drawGround, drawProps, drawCageFronts, drawAmbient, collide, keepOut, fireLit, fireMax, updateFire, feedFire, tryUpgradeFire, dropPickup };
+  return {
+    biomeAt, build, update, onNewDay, drawGround, drawProps, drawCageFronts, drawAmbient,
+    collide, keepOut, fireLit, fireMax, updateFire, feedFire, tryUpgradeFire, dropPickup,
+    drawTree, drawBush, drawCave, drawCage, drawTent, drawBoard, drawStall, drawFire,
+    tileBiome,
+    get BIOMES() { return BIOMES; },
+    get TILE() { return TILE; },
+  };
 })();
