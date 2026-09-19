@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Barry's Prison Run</title>
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="apple-touch-icon" href="assets/icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div id="stage-chip"></div>
+    <div id="objective" class="hidden"></div>
+    <div id="bossbar" class="hidden">
+      <b id="boss-name"></b>
+      <span id="boss-hp"></span>
+    </div>
+    <div id="banner" class="hidden"></div>
+    <div id="toast" class="hidden"></div>
+    <div id="hint" class="hidden"></div>
+    <div id="use-hint" class="hidden"></div>
+    <div id="crawl-chip" class="hidden">🧎 CRAWLING…</div>
+    <div id="controls-chip" class="hidden">⌨️ WASD move · drag = look · SPACE jump/shoot · E use</div>
+  </div>
+
+  <button id="mute">🔊</button>
+  <div id="rotate-hint">🔄 Turn your iPad sideways!</div>
+
+  <!-- touch controls -->
+  <div id="touch-ui" class="hidden">
+    <div id="stick"><div id="stick-knob"></div></div>
+    <div id="btn-shoot" class="tbtn hidden">🍎<span>SHOOT</span></div>
+    <div id="btn-use" class="tbtn">✋<span>USE</span></div>
+    <div id="btn-jump" class="tbtn big">⬆️<span>JUMP</span></div>
+  </div>
+
+  <!-- title screen -->
+  <div id="title" class="screen">
+    <h1>BARRY'S<br>PRISON RUN</h1>
+    <canvas id="title-art" width="150" height="200"></canvas>
+    <div class="menu">
+      <button id="btn-play" class="big">▶ PLAY</button>
+      <button id="btn-continue" class="big">↩ CONTINUE</button>
+      <button id="btn-howto">HOW TO PLAY</button>
+    </div>
+    <p class="note">Run away from Barry! HOY! · v1.0.0</p>
+  </div>
+
+  <!-- how to play -->
+  <div id="howto" class="screen hidden">
+    <h2>How to Play</h2>
+    <div class="cards">
+      <div class="card"><div class="big-emoji">🛏️</div><b>Climb</b><span>Ladders, bunk beds and the circle thingies on the walls.</span></div>
+      <div class="card"><div class="big-emoji">🏃</div><b>Run from Barry!</b><span>He cannot climb stairs or the circles. He can HOY.</span></div>
+      <div class="card"><div class="big-emoji">🍎</div><b>Fruit Bazooka</b><span>Splish-splash fruit at Chef Barry and the giant robot.</span></div>
+      <div class="card"><div class="big-emoji">🚁</div><b>Escape!</b><span>Car, ladder, helicopter — freedom! Nobody gets hurt, ever.</span></div>
+    </div>
+    <button id="btn-howto-back" class="big">BACK</button>
+  </div>
+
+  <!-- end screen -->
+  <div id="end" class="screen hidden">
+    <h1>YOU ESCAPED<br>BARRY'S PRISON!</h1>
+    <div id="end-stats"></div>
+    <button id="btn-again" class="big">🎉 PLAY AGAIN</button>
+  </div>
+
+  <script src="src/config.js"></script>
+  <script src="src/sound.js"></script>
+  <script src="src/sprites.js"></script>
+  <script src="src/world.js"></script>
+  <script src="src/engine.js"></script>
+  <script src="src/player.js"></script>
+  <script src="src/input.js"></script>
+  <script src="src/barry.js"></script>
+  <script src="src/bosses.js"></script>
+  <script src="src/minimodes.js"></script>
+  <script src="src/stages.js"></script>
+  <script src="src/game.js"></script>
+  <script src="src/ui.js"></script>
+  <script src="src/main.js"></script>
+</body>
+</html>
