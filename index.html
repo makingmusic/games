@@ -27,31 +27,38 @@
     .card b { font-size: 19px; }
     .card span { font-size: 13px; color: #b7c2cd; text-align: center; }
     .card img { height: 110px; }
+    .card time {
+      margin-top: auto; padding-top: 8px; font-size: 12px; color: #ffe9a8;
+      border-top: 1px dashed rgba(255,255,255,.18); width: 100%; text-align: center;
+    }
     p.note { font-size: 13px; color: #7d8aa5; }
   </style>
 </head>
 <body>
   <h1>🌙 Play!</h1>
+  <!--
+    This list is the inventory of published games. Only games with a card
+    here are put on the website (see tools/build-site.sh). The date on each
+    card is filled in by that script from git history: don't edit it by hand.
+  -->
   <div class="games">
-    <a class="card" href="99nights/">
+    <a class="card" href="99nights/" data-game="99nights">
       <span class="art">🏕️</span>
       <b>99 Nights</b>
       <span>Survive 99 spooky-but-cute nights. Keep the fire bright!</span>
+      <time datetime="2026-09-06">Published 06 September 2026</time>
     </a>
-    <a class="card" href="escapethecatinsidetheforest/">
+    <a class="card" href="escapethecatinsidetheforest/" data-game="escapethecatinsidetheforest">
       <img src="escapethecatinsidetheforest/assets/cat.png" alt="the Cat">
       <b>Escape the Cat Inside the Forest</b>
       <span>Shoo the Cat with your flashlight, free the kids, survive 85 nights!</span>
+      <time datetime="2026-09-05">Published 05 September 2026</time>
     </a>
-    <a class="card" href="elephanto/">
+    <a class="card" href="elephanto/" data-game="elephanto">
       <span class="art">🐘</span>
       <b>Elephanto</b>
       <span>First-person quest in the evil metal base. Beat Coffee Man &amp; Tea Girl in the arena!</span>
-    </a>
-    <a class="card" href="memory44/">
-      <span class="art">⬡</span>
-      <b>Signal &amp; Steel</b>
-      <span>Issue orders, cross the flooded valley, and hold the relay. Two-player tactics.</span>
+      <time datetime="2026-09-13">Published 13 September 2026</time>
     </a>
   </div>
   <p class="note">Best played on an iPad. Works offline — no ads, no trackers, kid-friendly.</p>

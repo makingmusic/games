@@ -40,3 +40,6 @@ __pycache__/
 *.tmp
 out/
 release/
+
+# GitHub Pages build output (tools/build-site.sh)
+_site/

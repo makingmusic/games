@@ -5,6 +5,10 @@ with an `index.html` entry point. Signal & Steel (`memory44/`) is the exception:
 its pass-and-play mode is static, while temporary online rooms use its small
 Node server. Static games can be published through three channels:
 
+A game is only published when it has a card on the landing page
+(`index.html`). Games without a card stay in the repo but off the site, so
+work in progress can be committed and backed up without going live.
+
 1. **GitHub Pages** — free public link, good for playtesting.
 2. **Cloudflare Pages** — free public link on a global CDN, good as the
    permanent home + custom domain.
@@ -37,14 +41,26 @@ A game is ready to publish when:
 Best for: instant shareable link for testers.
 
 - Repo must be public (private repos need a paid plan for Pages).
-- Option A — branch deploy: Settings → Pages → Deploy from branch →
-  branch `main`, folder `/ (root)`. The game is then live at
-  `https://<user>.github.io/<repo>/<game>/`.
-- Option B — GitHub Actions deploy (more control, same result).
+- We deploy with GitHub Actions (`.github/workflows/publish.yml`), not
+  straight from the branch, so that only finished games go live. One-time
+  setup: Settings → Pages → Build and deployment → Source: **GitHub Actions**.
+- On every push to `main` the workflow runs `tools/build-site.sh`, which:
+  1. reads the landing page and collects every card's `data-game` folder;
+  2. stamps each card with the date of the last commit that touched that
+     folder (`docs/` and `test/` don't count);
+  3. copies `index.html` plus those folders — and nothing else — into
+     `_site/`, which is what gets published.
+- A game is then live at `https://<user>.github.io/<repo>/<game>/`.
 - HTTPS and a `<user>.github.io` domain are included. Custom domains are
   supported via a `CNAME` file + DNS record.
 - Soft limits (~1 GB site, ~100 GB bandwidth/month) — plenty for these
   games. No preview URLs per pull request on the free flow.
+
+To publish a new game: add its card to `index.html` with
+`data-game="<folder>"` and an empty `<time datetime=""></time>`, run
+`tools/build-site.sh` to fill in the date, commit, push. To unpublish a
+game: remove its card. Actions in the workflow are pinned to commit SHAs;
+bump them deliberately.
 
 Deploy flow per release: merge to `main` → live in ~1 minute.
 
@@ -141,6 +157,6 @@ offline) so mobile players can Add to Home Screen without store review.
 | 99 Nights  | `99nights/` | GitHub Pages: https://makingmusic.github.io/games/99nights/ | not yet |
 | Escape the Cat Inside the Forest | `escapethecatinsidetheforest/` | GitHub Pages: https://makingmusic.github.io/games/escapethecatinsidetheforest/ | not yet |
 | Elephanto | `elephanto/` | GitHub Pages: https://makingmusic.github.io/games/elephanto/ | not yet |
-| Signal & Steel | `memory44/` | GitHub Pages: pass-and-play; Node host required for online rooms | not yet |
+| Signal & Steel | `memory44/` | **not published** (work in progress; no card on the landing page). When ready: pass-and-play on GitHub Pages, Node host required for online rooms | not yet |
 
 Update this table as each game ships somewhere.
