@@ -158,6 +158,6 @@ offline) so mobile players can Add to Home Screen without store review.
 | Escape the Cat Inside the Forest | `escapethecatinsidetheforest/` | GitHub Pages: https://makingmusic.github.io/games/escapethecatinsidetheforest/ | not yet |
 | Elephanto | `elephanto/` | GitHub Pages: https://makingmusic.github.io/games/elephanto/ | not yet |
 | Signal & Steel | `memory44/` | **not published** (work in progress; no card on the landing page). When ready: pass-and-play on GitHub Pages, Node host required for online rooms | not yet |
-| Barry's Prison Run | `barrysprisonrun/` | **built, not yet published** — static + offline, ready for a landing-page card whenever you want it live | not yet |
+| Barry's Prison Run | `barrysprisonrun/` | GitHub Pages: https://makingmusic.github.io/games/barrysprisonrun/ | not yet |
 
 Update this table as each game ships somewhere.
