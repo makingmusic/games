@@ -1,0 +1,17 @@
+{
+  "name": "signal-and-steel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An original two-player diesel-era hex tactics game.",
+  "type": "module",
+  "engines": {
+    "node": "24.18.0"
+  },
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "test": "node --test",
+    "check": "node --check server.mjs && node --check src/rng.js && node --check src/board.js && node --check src/game.js && node --check src/main.js && node --check src/content/cards.js && node --check src/content/dice.js && node --check src/content/terrain.js && node --check src/content/units.js && node --check src/scenarios/index.js && node --check src/scenarios/pegasus-bridge.js && node --test",
+    "build": "npm run check"
+  }
+}

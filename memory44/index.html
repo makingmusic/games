@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#15201d">
+    <meta name="description" content="Signal & Steel — a two-player command-card hex battle.">
+    <title>Signal &amp; Steel</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Signal and Steel home">
+        <span class="brand-mark" aria-hidden="true">S·S</span>
+        <span><strong>Signal &amp; Steel</strong><small id="scenario-title">Command-card battle</small></span>
+      </a>
+      <div class="medal-rack" aria-label="Victory medals">
+        <div class="medal ochre"><span>Allies</span><strong id="ochre-medals">0</strong></div>
+        <div class="medal-goal" id="medal-goal">4</div>
+        <div class="medal teal"><span>Axis</span><strong id="teal-medals">0</strong></div>
+      </div>
+      <div class="match-meta">
+        <span id="mode-badge" class="badge">Preview</span>
+        <button id="leave-button" class="text-button" type="button" hidden>Leave match</button>
+      </div>
+    </header>
+
+    <section id="lobby" class="lobby">
+      <div class="lobby-card">
+        <p class="eyebrow">Two commanders, one deck</p>
+        <h1>Signal &amp; Steel</h1>
+        <p class="lede">Play a command card, order units, move, then battle. First to the medal target wins. Pegasus Bridge is the opening fight.</p>
+        <label class="field">
+          <span>Scenario</span>
+          <select id="scenario-select">
+            <option value="pegasus-bridge">Pegasus Bridge — 06 June 1944</option>
+          </select>
+        </label>
+        <button id="local-button" class="primary-button" type="button">Pass &amp; play</button>
+        <div class="divider"><span>or</span></div>
+        <button id="create-button" class="secondary-button wide" type="button">Create online room</button>
+        <form id="join-form" class="join-form">
+          <label for="room-code">Join a room</label>
+          <div>
+            <input id="room-code" name="room" inputmode="text" autocomplete="off" maxlength="12" placeholder="RIVER-123">
+            <button class="secondary-button" type="submit">Join</button>
+          </div>
+        </form>
+        <p id="lobby-message" class="message" role="status"></p>
+      </div>
+    </section>
+
+    <main class="table" id="table" hidden>
+      <div class="status-strip">
+        <div>
+          <p class="eyebrow" id="phase-label">Play a command card</p>
+          <h1 id="status-heading">Allies command</h1>
+        </div>
+        <p id="seat-status" class="seat-status"></p>
+      </div>
+
+      <div class="board-scroller" id="board-scroller">
+        <div id="board" class="board" role="grid" aria-label="Battlefield"></div>
+      </div>
+
+      <div class="command-bar">
+        <p id="hint" role="status">Play a command card from your hand.</p>
+        <div class="phase-actions">
+          <button id="confirm-orders" class="secondary-button" type="button" hidden>Confirm orders</button>
+          <button id="end-moves" class="secondary-button" type="button" hidden>Done moving</button>
+          <button id="end-battles" class="secondary-button" type="button" hidden>End battles</button>
+          <button id="take-ground" class="primary-button compact" type="button" hidden>Advance</button>
+          <button id="skip-ground" class="secondary-button" type="button" hidden>Hold</button>
+          <button id="resolve-special" class="secondary-button" type="button" hidden>Resolve card</button>
+        </div>
+      </div>
+
+      <div id="hand" class="hand" aria-label="Command hand"></div>
+
+      <section id="room-panel" class="room-panel" hidden>
+        <span>Room <strong id="room-code-display">—</strong></span>
+        <button id="copy-button" class="icon-button" type="button">Copy invite</button>
+      </section>
+    </main>
+
+    <div id="pass-gate" class="gate" hidden>
+      <div>
+        <p class="eyebrow">Pass the device</p>
+        <h2 id="pass-heading">Hand the table to the next commander</h2>
+        <button id="reveal-button" class="primary-button" type="button">Reveal my hand</button>
+      </div>
+    </div>
+
+    <div id="dice-overlay" class="gate dice-gate" hidden>
+      <div>
+        <p class="eyebrow">Battle dice</p>
+        <div id="dice-faces" class="dice-faces"></div>
+        <button id="dice-dismiss" class="secondary-button" type="button">Continue</button>
+      </div>
+    </div>
+
+    <footer>
+      Independent original game. No third-party assets or scenario maps.
+    </footer>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>

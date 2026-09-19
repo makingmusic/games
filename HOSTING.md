@@ -1,9 +1,9 @@
 # Hosting & Publishing Guide (all games)
 
-This repo holds small static games. Each game is a self-contained folder
-(`99nights/`, future games the same) with an `index.html` entry point, no
-build step, and no server. That means every game can be published the same
-way through three channels:
+This repo mostly holds small static games. Each game is a self-contained folder
+with an `index.html` entry point. Signal & Steel (`memory44/`) is the exception:
+its pass-and-play mode is static, while temporary online rooms use its small
+Node server. Static games can be published through three channels:
 
 1. **GitHub Pages** — free public link, good for playtesting.
 2. **Cloudflare Pages** — free public link on a global CDN, good as the
@@ -52,8 +52,8 @@ Deploy flow per release: merge to `main` → live in ~1 minute.
 
 Best for: the canonical public URL, custom domain, unlimited bandwidth.
 
-Why it fits: our games are pure static files, and Pages serves static
-assets with unlimited bandwidth on the free plan, plus free SSL, preview
+Why it fits for each game's static mode: Pages serves static assets with
+unlimited bandwidth on the free plan, plus free SSL, preview
 deployments, and up to 100 projects per account — one project per game.
 
 Setup (one Pages project per game):
@@ -141,5 +141,6 @@ offline) so mobile players can Add to Home Screen without store review.
 | 99 Nights  | `99nights/` | GitHub Pages: https://makingmusic.github.io/games/99nights/ | not yet |
 | Escape the Cat Inside the Forest | `escapethecatinsidetheforest/` | GitHub Pages: https://makingmusic.github.io/games/escapethecatinsidetheforest/ | not yet |
 | Elephanto | `elephanto/` | GitHub Pages: https://makingmusic.github.io/games/elephanto/ | not yet |
+| Signal & Steel | `memory44/` | GitHub Pages: pass-and-play; Node host required for online rooms | not yet |
 
 Update this table as each game ships somewhere.

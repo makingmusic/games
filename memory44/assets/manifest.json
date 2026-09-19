@@ -1,0 +1,18 @@
+{
+  "style": "painted miniature-wargame table, gouache, muted period colours",
+  "tiles": {
+    "forest": "tiles/forest.jpg",
+    "hill": "tiles/hill.jpg"
+  },
+  "units": {
+    "infantry-ochre": "units/infantry-ochre.jpg",
+    "infantry-teal": "units/infantry-teal.jpg"
+  },
+  "cards": {
+    "section-frame": "cards/section-frame.jpg"
+  },
+  "notes": [
+    "Infantry sprites are on a hot-pink key. Engine still uses letter tokens until chroma-key compositing is added.",
+    "Forest and hill tiles are wired as hex fills. Remaining terrain uses geometric placeholders."
+  ]
+}

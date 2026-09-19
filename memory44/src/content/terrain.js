@@ -1,0 +1,107 @@
+export const TERRAIN = Object.freeze({
+  open: Object.freeze({
+    stopOnEnter: false,
+    noBattleOnEnter: false,
+    blocksLos: false,
+    impassable: false,
+    reduction: null,
+  }),
+  forest: Object.freeze({
+    stopOnEnter: true,
+    noBattleOnEnter: true,
+    blocksLos: true,
+    impassable: false,
+    reduction: Object.freeze({ infantry: 1, armor: 2 }),
+  }),
+  hedgerow: Object.freeze({
+    stopOnEnter: true,
+    noBattleOnEnter: true,
+    blocksLos: true,
+    impassable: false,
+    mustStartAdjacentToEnter: true,
+    stopOnLeave: true,
+    reduction: Object.freeze({ infantry: 1, armor: 2 }),
+  }),
+  hill: Object.freeze({
+    stopOnEnter: false,
+    noBattleOnEnter: false,
+    blocksLos: "hill",
+    impassable: false,
+    uphillReduction: 1,
+    reduction: null,
+  }),
+  town: Object.freeze({
+    stopOnEnter: true,
+    noBattleOnEnter: true,
+    blocksLos: true,
+    impassable: false,
+    reduction: Object.freeze({ infantry: 1, armor: 2 }),
+    armorOutReduction: 2,
+  }),
+  river: Object.freeze({
+    stopOnEnter: false,
+    noBattleOnEnter: false,
+    blocksLos: false,
+    impassable: true,
+    reduction: null,
+  }),
+  bridge: Object.freeze({
+    stopOnEnter: false,
+    noBattleOnEnter: false,
+    blocksLos: false,
+    impassable: false,
+    reduction: null,
+  }),
+  ocean: Object.freeze({
+    stopOnEnter: false,
+    noBattleOnEnter: false,
+    blocksLos: false,
+    impassable: false,
+    ocean: true,
+    maxMove: 1,
+    cannotBattle: true,
+    cannotRetreatInto: true,
+    reduction: null,
+  }),
+  beach: Object.freeze({
+    stopOnEnter: false,
+    noBattleOnEnter: false,
+    blocksLos: false,
+    impassable: false,
+    beach: true,
+    turnMoveCap: 2,
+    reduction: null,
+  }),
+});
+
+export const OBSTACLES = Object.freeze({
+  bunker: Object.freeze({
+    blocksLos: true,
+    impassableTo: Object.freeze(["armor", "artillery"]),
+    infantryMayBattleOnEnter: true,
+    reduction: Object.freeze({ infantry: 1, armor: 2 }),
+    ignoreFirstFlag: true,
+    ownerOnlyProtection: true,
+  }),
+  hedgehog: Object.freeze({
+    blocksLos: false,
+    impassableTo: Object.freeze(["armor", "artillery"]),
+    reduction: null,
+    ignoreFirstFlag: "infantry",
+  }),
+  sandbag: Object.freeze({
+    blocksLos: false,
+    removable: true,
+    reductionIfNoTerrain: Object.freeze({ infantry: 1, armor: 2 }),
+    ignoreFirstFlag: true,
+  }),
+  wire: Object.freeze({
+    blocksLos: false,
+    stopOnEnter: true,
+    battleOutReduction: 1,
+    infantryMayCut: true,
+    armorClearsOnEnter: true,
+  }),
+});
+
+export const BLOCKING_TERRAIN = Object.freeze(new Set(["forest", "hedgerow", "town", "bunker"]));
