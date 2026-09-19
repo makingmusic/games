@@ -19,14 +19,24 @@ var G = globalThis.G || (globalThis.G = {});
   G.collide = collide;
 
   // ---------- player ----------
+  // Two input styles:
+  //  - legacy top-down: { mx, my } world-space move vector (bot + tests)
+  //  - first-person:    { turn, fwd } — turn rotates the view, fwd walks along it
   G.updatePlayer = function (st, dt, input) {
     const p = st.player, c = C();
     let sp = c.PLAYER_SPEED * (p.speedT > 0 ? 1.35 : 1);
     let mx = input.mx, my = input.my;
+    const fp = input.fwd !== undefined || input.turn !== undefined;
+    if (fp) {
+      p.facing += (input.turn || 0) * c.FP_TURN_SPEED * dt;
+      const fwd = U.clamp(input.fwd || 0, -1, 1);
+      mx = Math.cos(p.facing) * fwd;
+      my = Math.sin(p.facing) * fwd;
+    }
     const m = Math.hypot(mx, my);
     if (m > 1) { mx /= m; my /= m; }
     if (m > 0.08) {
-      p.facing = Math.atan2(my, mx);
+      if (!fp) p.facing = Math.atan2(my, mx);
       p.moving = true;
       collide(st, p, mx * sp * dt, my * sp * dt);
       p.walk = (p.walk || 0) + dt * 8;

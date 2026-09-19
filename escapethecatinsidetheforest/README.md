@@ -1,9 +1,9 @@
 # Escape the Cat Inside the Forest
 
-A cozy-but-spooky top-down survival adventure designed by a 7-year-old.
-Explore the forest, keep the campfire big and cozy, shoo the Cat with your
-flashlight, rescue Kraken Kid, Squid Kid, Dino Kid and Koala Kid — and survive
-**85 nights** to fly home on a giant kite-glider.
+A cozy-but-spooky first-person survival adventure designed by a 7-year-old.
+Explore the forest through your own eyes, keep the campfire big and cozy, shoo
+the Cat with your flashlight, rescue Kraken Kid, Squid Kid, Dino Kid and Koala
+Kid — and survive **85 nights** to fly home on a giant kite-glider.
 
 Built for kids under 10: no blood, no bosses, no jump scares, no death —
 animals get dizzy and scamper away, and the player just "gets so sleepy."
@@ -21,7 +21,8 @@ Best on iPad Safari (landscape). Add to Home Screen for fullscreen-ish play.
 
 | Action | Touch | Keyboard |
 |---|---|---|
-| Move | floating joystick (left half of the screen) | WASD / arrows |
+| Walk forward / back | floating joystick up/down (left half) | W/S or ▲/▼ |
+| Turn / look around | joystick left/right, or drag the right half | A/D or ◀/▶ (mouse: drag) |
 | Bonk! (attack / chop) | hold the big red button | hold Space |
 | Flashlight | tap the torch button (toggle) | F |
 | Grab (pick / interact / free a kid) | hold the green hand | hold E |
@@ -67,6 +68,7 @@ The game auto-saves at every dawn, on pause and when you switch tabs.
 
 ```
 node test/smoke.js     # world-gen + mechanics + save/load invariants
+node test/fp.js        # first-person movement, raycast + projection math
 node test/runbot.js 3  # the 85-night balance proof below
 ```
 
@@ -158,7 +160,8 @@ src/entities.js  player, the Cat, animals, cultists, kids, drops
 src/systems.js   step loop, day/night, fire/hunger, combat, trading,
                  crafting, events, defeat/win, save/load
 src/bot.js       auto-player used for the balance proof
-src/sprites.js   procedural cartoon rendering + night darkness
+src/sprites.js   procedural cartoon sprites + sprite baking for billboards
+src/fp.js        first-person renderer: raycast tree walls + billboard sprites
 src/ui.js        HUD, panels, banners, audio synth
 src/main.js      boot, game loop, input (touch + keyboard), ?fast/?bot
 assets/cat.png         the Cat (idle / scare pose), the designer's plush, cut out

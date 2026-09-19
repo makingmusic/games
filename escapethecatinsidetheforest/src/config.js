@@ -185,6 +185,12 @@ G.CONFIG = {
   STORY_FOOD_LOSS: 0.5,     // drop half of carried food
   STORY_DIAMOND_LOSS: 0.25, // drop a quarter of diamonds
 
+  // ---- First-person view ----
+  FP_TURN_SPEED: 3.4,       // radians/s at full turn input
+  FP_FOV: 1.15,             // horizontal field of view in radians (~66°)
+  FP_VIEW_DIST: 34 * 32,    // how far the eye can see (px)
+  FP_TREE_H: 2.6 * 32,      // tree wall height in px
+
   // ---- Misc ----
   PICKUP_R: 30,             // auto-pickup radius for drops
   GRAB_R: 52,               // interact radius for Grab

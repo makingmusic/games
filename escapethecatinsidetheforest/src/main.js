@@ -94,8 +94,9 @@ var G = globalThis.G || (globalThis.G = {});
   });
   window.addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
 
-  // ---- touch: floating joystick on the left half (§17)
+  // ---- touch: floating joystick on the left half (walk/turn), drag right half to look (§17)
   const joyEl = $('joystick'), knobEl = $('knob');
+  const look = { id: null, lx: 0 };
   function joyStart(x, y, id) {
     touch.joyId = id; touch.jx = x; touch.jy = y; touch.vx = 0; touch.vy = 0;
     joyEl.style.left = (x - 60) + 'px'; joyEl.style.top = (y - 60) + 'px';
@@ -113,6 +114,12 @@ var G = globalThis.G || (globalThis.G = {});
     joyEl.classList.remove('show');
     knobEl.style.transform = 'translate(0,0)';
   }
+  function lookStart(x, id) { look.id = id; look.lx = x; }
+  function lookMove(x) {
+    if (G.state && playTouchOk()) G.state.player.facing += (x - look.lx) * 0.0075;
+    look.lx = x;
+  }
+  function lookEnd() { look.id = null; }
   function uiTarget(el) {
     return !!(el && el.closest && el.closest('button, a, input, .slot, .screen, .panelBox, #hotbar, #catdebug'));
   }
@@ -127,26 +134,39 @@ var G = globalThis.G || (globalThis.G = {});
       if (t.clientX < vw * 0.55 && touch.joyId === null) {
         joyStart(t.clientX, t.clientY, t.identifier);
         e.preventDefault();
+      } else if (t.clientX >= vw * 0.55 && look.id === null) {
+        lookStart(t.clientX, t.identifier);
+        e.preventDefault();
       }
     }
   }, { passive: false });
   document.addEventListener('gesturestart', (e) => e.preventDefault()); // iOS pinch
   document.addEventListener('touchmove', (e) => {
-    for (const t of e.changedTouches || []) if (t.identifier === touch.joyId) joyMove(t.clientX, t.clientY);
-    if (touch.joyId !== null) e.preventDefault();
+    for (const t of e.changedTouches || []) {
+      if (t.identifier === touch.joyId) joyMove(t.clientX, t.clientY);
+      else if (t.identifier === look.id) lookMove(t.clientX);
+    }
+    if (touch.joyId !== null || look.id !== null) e.preventDefault();
   }, { passive: false });
   document.addEventListener('touchend', (e) => {
-    for (const t of e.changedTouches || []) if (t.identifier === touch.joyId) joyEnd();
+    for (const t of e.changedTouches || []) {
+      if (t.identifier === touch.joyId) joyEnd();
+      else if (t.identifier === look.id) lookEnd();
+    }
   });
-  document.addEventListener('touchcancel', joyEnd);
-  // mouse fallback for desktop testing of the joystick
-  let mouseJoy = false;
+  document.addEventListener('touchcancel', () => { joyEnd(); lookEnd(); });
+  // mouse fallback for desktop: drag on the canvas to look around
+  let mouseLook = false, mouseLx = 0;
   window.addEventListener('mousedown', (e) => {
     if (!playTouchOk() || uiTarget(e.target)) return;
-    if (e.clientX < vw * 0.55) { mouseJoy = true; joyStart(e.clientX, e.clientY, 'mouse'); }
+    mouseLook = true; mouseLx = e.clientX;
   });
-  window.addEventListener('mousemove', (e) => { if (mouseJoy) joyMove(e.clientX, e.clientY); });
-  window.addEventListener('mouseup', () => { if (mouseJoy) { mouseJoy = false; joyEnd(); } });
+  window.addEventListener('mousemove', (e) => {
+    if (!mouseLook) return;
+    if (G.state && playTouchOk()) G.state.player.facing += (e.clientX - mouseLx) * 0.0075;
+    mouseLx = e.clientX;
+  });
+  window.addEventListener('mouseup', () => { mouseLook = false; });
 
   // ---- action buttons: hold-to-repeat for Bonk/Grab, tap for Light/Yum
   function bindHold(el, set) {
@@ -186,12 +206,13 @@ var G = globalThis.G || (globalThis.G = {});
   }
 
   function gatherInput(dt) {
-    let mx = 0, my = 0;
-    if (keys.has('a') || keys.has('arrowleft')) mx -= 1;
-    if (keys.has('d') || keys.has('arrowright')) mx += 1;
-    if (keys.has('w') || keys.has('arrowup')) my -= 1;
-    if (keys.has('s') || keys.has('arrowdown')) my += 1;
-    if (touch.joyId !== null) { mx += touch.vx; my += touch.vy; }
+    // first-person controls: W/S (or joystick Y) walk, A/D/arrows (or joystick X) turn
+    let fwd = 0, turn = 0;
+    if (keys.has('w') || keys.has('arrowup')) fwd += 1;
+    if (keys.has('s') || keys.has('arrowdown')) fwd -= 1;
+    if (keys.has('a') || keys.has('arrowleft')) turn -= 1;
+    if (keys.has('d') || keys.has('arrowright')) turn += 1;
+    if (touch.joyId !== null) { fwd += -touch.vy; turn += touch.vx; }
     const st = G.state;
     // hold-to-swing: a new bonk fires as soon as the cooldown allows
     const canSwing = st && st.player.cd <= 0.05;
@@ -201,7 +222,8 @@ var G = globalThis.G || (globalThis.G = {});
     else input.grab = false;
     input.light = lightQueued; lightQueued = false;
     input.eat = eatQueued; eatQueued = false;
-    input.mx = mx; input.my = my;
+    input.fwd = U.clamp(fwd, -1, 1); input.turn = U.clamp(turn, -1, 1);
+    delete input.mx; delete input.my;
     return input;
   }
 
@@ -243,14 +265,14 @@ var G = globalThis.G || (globalThis.G = {});
   function startNew(mode) {
     const st = G.newGame(mode);
     if (BOT) { G.botInit(st, { console: true }); $('botconsole').classList.remove('hidden'); }
+    // look at the campfire when the adventure starts
+    st.player.facing = Math.atan2(st.fire.y - st.player.y, st.fire.x - st.player.x);
     G.ui.startGame(st);
-    cam.x = st.player.x; cam.y = st.player.y;
     G.banner(mode === 'true' ? 'True Story Mode — Very Hard! Good luck!' : 'Stay brave! Survive 85 nights!', '#ffe9a8');
   }
 
   // ------------------------------------------------------------------ loop
   let last = performance.now();
-  let cam = { x: 0, y: 0 };
   let hudT = 0;
 
   function frame(now) {
@@ -268,20 +290,12 @@ var G = globalThis.G || (globalThis.G = {});
         const inp = gatherInput(h);
         if (BOT) {
           Object.assign(inp, G.botTick(st, h));
-          if (inp.attack !== undefined) { /* bot already pulses attack */ }
+          delete inp.fwd; delete inp.turn; // the bot drives with legacy mx/my
         }
         G.step(st, h, inp);
         rem -= h;
       }
     }
-
-    // camera follows the player — only what your eyes see (§5)
-    if (Math.hypot(cam.x - st.player.x, cam.y - st.player.y) > 1500) { cam.x = st.player.x; cam.y = st.player.y; }
-    cam.x = U.lerp(cam.x, st.player.x, 1 - Math.pow(0.001, dt));
-    cam.y = U.lerp(cam.y, st.player.y, 1 - Math.pow(0.001, dt));
-    const c = C();
-    cam.x = U.clamp(cam.x, vw / 2, c.MAP_W * c.TILE - vw / 2);
-    cam.y = U.clamp(cam.y, vh / 2, c.MAP_H * c.TILE - vh / 2);
 
     render(st);
     hudT += dt;
@@ -290,21 +304,7 @@ var G = globalThis.G || (globalThis.G = {});
 
   function render(st) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.fillStyle = '#1e2b22';
-    ctx.fillRect(0, 0, vw, vh);
-    ctx.save();
-    ctx.translate(vw / 2 - cam.x, vh / 2 - cam.y);
-    G.drawGround(ctx, st, cam, vw, vh);
-    G.drawProps(ctx, st, cam, vw, vh);
-    // rescued kids follow (draw before player), animals, cultists
-    for (const k of st.kids) if (k.rescued) G.drawKid(ctx, k.x, k.y, k.id, st.time + k.bob, true);
-    G.drawAnimals(ctx, st);
-    G.drawCultists(ctx, st);
-    G.drawCat(ctx, st);
-    G.drawPlayer(ctx, st);
-    G.drawFx(ctx, st);
-    ctx.restore();
-    G.drawDarkness(ctx, st, cam, vw, vh);
+    G.fpRender(ctx, st, vw, vh);
   }
 
   // ------------------------------------------------------------------ boot

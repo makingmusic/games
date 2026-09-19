@@ -432,6 +432,23 @@ var G = globalThis.G || (globalThis.G = {});
     ctx.restore();
   }
 
+  function drawCultistShape(ctx, bob, t) {
+    ctx.fillStyle = '#3d3d3d';
+    ctx.beginPath(); ctx.ellipse(0, -9 - bob, 9, 11, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#1f1f1f'; // black vest (§9)
+    ctx.fillRect(-7, -16 - bob, 4, 10); ctx.fillRect(3, -16 - bob, 4, 10);
+    ctx.fillStyle = '#d8cfc4';
+    ctx.beginPath(); ctx.arc(3, -20 - bob, 5.5, 0, 7); ctx.fill();
+    ctx.fillStyle = '#3d3d3d'; // cat-ear hood
+    ctx.beginPath(); ctx.moveTo(-1, -25 - bob); ctx.lineTo(1, -31 - bob); ctx.lineTo(4, -25 - bob); ctx.closePath();
+    ctx.moveTo(5, -25 - bob); ctx.lineTo(8, -30 - bob); ctx.lineTo(9, -24 - bob); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(4, -20 - bob, 1.2, 0, 7); ctx.fill();
+    ctx.fillStyle = '#ffd76e'; // candle
+    ctx.fillRect(10, -18 - bob, 3, 6);
+    ctx.fillStyle = `rgba(255,215,110,${0.5 + Math.sin(t * 10) * 0.3})`;
+    ctx.beginPath(); ctx.arc(11.5, -20 - bob, 3, 0, 7); ctx.fill();
+  }
+
   G.drawCultists = function (ctx, st) {
     const t = st.time || 0;
     for (const cu of st.cultists) {
@@ -439,20 +456,7 @@ var G = globalThis.G || (globalThis.G = {});
       actorShadow(ctx, cu.x, cu.y + 10, 10, 4);
       ctx.save(); ctx.translate(cu.x, cu.y);
       const flip = Math.cos(cu.dir) < 0 ? -1 : 1; ctx.scale(flip, 1);
-      ctx.fillStyle = '#3d3d3d';
-      ctx.beginPath(); ctx.ellipse(0, -9 - bob, 9, 11, 0, 0, 7); ctx.fill();
-      ctx.fillStyle = '#1f1f1f'; // black vest (§9)
-      ctx.fillRect(-7, -16 - bob, 4, 10); ctx.fillRect(3, -16 - bob, 4, 10);
-      ctx.fillStyle = '#d8cfc4';
-      ctx.beginPath(); ctx.arc(3, -20 - bob, 5.5, 0, 7); ctx.fill();
-      ctx.fillStyle = '#3d3d3d'; // cat-ear hood
-      ctx.beginPath(); ctx.moveTo(-1, -25 - bob); ctx.lineTo(1, -31 - bob); ctx.lineTo(4, -25 - bob); ctx.closePath();
-      ctx.moveTo(5, -25 - bob); ctx.lineTo(8, -30 - bob); ctx.lineTo(9, -24 - bob); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(4, -20 - bob, 1.2, 0, 7); ctx.fill();
-      ctx.fillStyle = '#ffd76e'; // candle
-      ctx.fillRect(10, -18 - bob, 3, 6);
-      ctx.fillStyle = `rgba(255,215,110,${0.5 + Math.sin(t * 10) * 0.3})`;
-      ctx.beginPath(); ctx.arc(11.5, -20 - bob, 3, 0, 7); ctx.fill();
+      drawCultistShape(ctx, bob, t);
       ctx.restore();
       if (cu.state === 'steal') { ctx.fillStyle = '#c9a7ff'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('hehe!', cu.x, cu.y - 34); }
     }
@@ -609,6 +613,7 @@ var G = globalThis.G || (globalThis.G = {});
   };
 
   // ---------------------------------------------------------------- darkness (§5)
+  G.nightAlpha = nightAlpha;
   function nightAlpha(st) {
     const c = C();
     if (st.phase === 'day') {
@@ -673,5 +678,112 @@ var G = globalThis.G || (globalThis.G = {});
     if (st.gathering.active) { const big = st.temples.find(x => x.big); if (big) hole(big.x, big.y, 180); }
     d.globalCompositeOperation = 'source-over';
     ctx.drawImage(dark, 0, 0);
+  };
+
+  // ---------------------------------------------------------------- first-person support
+  G.TILE_COLORS = TILE_COLORS;
+  G.drawFireShape = drawFire; // (ctx, x, y, level, t, isCamp) — fp.js draws it as a billboard
+
+  // Bake the procedural sprites into offscreen canvases so the first-person
+  // renderer can billboard them. Anchor: bottom-center of the canvas is the
+  // actor's ground position. Sizes are world px (canvases are 2x for sharpness).
+  G.bakeSprites = function () {
+    const S2 = 2;
+    function bake(w, h, footY, fn) {
+      const cv = document.createElement('canvas');
+      cv.width = Math.ceil(w * S2); cv.height = Math.ceil(h * S2);
+      const c2 = cv.getContext('2d');
+      c2.scale(S2, S2);
+      c2.translate(w / 2, footY);
+      fn(c2);
+      return { cv, w, h };
+    }
+    const B = { animal: {}, kid: {}, cage: {}, drop: {} };
+
+    for (const type of Object.keys(C().ANIMALS)) {
+      const def = C().ANIMALS[type], s = def.r / 15;
+      const draw = ({
+        bunny: drawBunny, hog: drawHog, wolf: drawWolf, bear: drawBear,
+        alphaWolf: drawAlphaWolf, alphaBear: drawAlphaBear, emberHog: drawEmberHog,
+      })[type];
+      B.animal[type] = bake(48 * s, 44 * s, 38 * s, (c2) => { c2.scale(s, s); draw(c2, 0, {}, 0); });
+    }
+    for (const k of C().KIDS) {
+      B.kid[k.id] = bake(34, 56, 42, (c2) => G.drawKid(c2, 0, 0, k.id, 0, false));
+      B.cage[k.id] = bake(46, 50, 36, (c2) => {
+        G.drawKid(c2, 0, -6, k.id, 0, false);
+        c2.strokeStyle = '#c9a15f'; c2.lineWidth = 3;
+        for (let i = -2; i <= 2; i++) { c2.beginPath(); c2.moveTo(i * 8, -26); c2.lineTo(i * 8, 14); c2.stroke(); }
+        c2.strokeStyle = '#a8813f';
+        c2.strokeRect(-20, -26, 40, 40);
+      });
+    }
+    B.cultist = bake(28, 40, 36, (c2) => drawCultistShape(c2, 0, 0));
+    B.traderFeather = bake(52, 64, 36, (c2) => drawFeatherTrader(c2, 0, 0, 0));
+    B.traderPelt = bake(52, 64, 36, (c2) => drawPeltTrader(c2, 0, 0, 0));
+    B.signpost = bake(64, 56, 48, (c2) => {
+      c2.fillStyle = '#8a6239'; c2.fillRect(-3, -26, 6, 34);
+      c2.fillStyle = '#a97c4f'; rr(c2, -30, -44, 60, 26, 4); c2.fill();
+      c2.fillStyle = '#5d4326'; c2.font = 'bold 10px sans-serif'; c2.textAlign = 'center';
+      c2.fillText('KIDS', 0, -33); c2.fillText('→ ←', 0, -23);
+    });
+    B.temple = bake(76, 64, 44, (c2) => {
+      c2.fillStyle = '#9aa2ab'; rr(c2, -34, -26, 68, 46, 6); c2.fill();
+      c2.fillStyle = '#848d98'; rr(c2, -26, -40, 52, 20, 5); c2.fill();
+      c2.fillStyle = '#767f8a';
+      for (let i = 0; i < 3; i++) c2.fillRect(-20 + i * 15, 4, 10, 12);
+    });
+    B.templeBig = bake(122, 104, 72, (c2) => {
+      c2.scale(1.6, 1.6);
+      c2.fillStyle = '#9aa2ab'; rr(c2, -34, -26, 68, 46, 6); c2.fill();
+      c2.fillStyle = '#848d98'; rr(c2, -26, -40, 52, 20, 5); c2.fill();
+      c2.fillStyle = '#767f8a';
+      for (let i = 0; i < 3; i++) c2.fillRect(-20 + i * 15, 4, 10, 12);
+      c2.fillStyle = '#bfe8ff';
+      c2.beginPath(); c2.ellipse(0, -2, 20, 12, 0, 0, 7); c2.fill();
+      c2.fillStyle = '#7fd4ff';
+      c2.beginPath(); c2.ellipse(0, -4, 10, 6, 0, 0, 7); c2.fill();
+    });
+    B.bushRipe = bake(34, 26, 14, (c2) => {
+      c2.fillStyle = '#3e8e55';
+      c2.beginPath(); c2.ellipse(0, 0, 15, 11, 0, 0, 7); c2.fill();
+      c2.fillStyle = '#357c4a';
+      c2.beginPath(); c2.ellipse(-5, -4, 7, 5, 0, 0, 7); c2.fill();
+      c2.fillStyle = '#a06cd5';
+      for (const [dx, dy] of [[-8, -2], [-2, -6], [5, -3], [9, 2], [0, 3], [-5, 5]]) { c2.beginPath(); c2.arc(dx, dy, 3, 0, 7); c2.fill(); }
+    });
+    B.bushBare = bake(34, 26, 14, (c2) => {
+      c2.fillStyle = '#3e8e55';
+      c2.beginPath(); c2.ellipse(0, 0, 15, 11, 0, 0, 7); c2.fill();
+      c2.fillStyle = '#cfe8c9';
+      for (const [dx, dy] of [[-6, -2], [2, -4], [7, 2]]) { c2.beginPath(); c2.arc(dx, dy, 1.4, 0, 7); c2.fill(); }
+    });
+    B.scrap = bake(30, 20, 12, (c2) => {
+      c2.fillStyle = '#8d99a6';
+      c2.beginPath(); c2.ellipse(0, 0, 14, 9, 0, 0, 7); c2.fill();
+      c2.fillStyle = '#b7c2cd';
+      c2.fillRect(-7, -6, 5, 4); c2.fillRect(2, -8, 6, 5);
+      c2.fillStyle = '#ffce54'; c2.fillRect(-2, -2, 4, 4);
+    });
+    B.diamond = bake(18, 20, 10, (c2) => {
+      c2.fillStyle = '#7fe3ff';
+      c2.beginPath(); c2.moveTo(0, -8); c2.lineTo(6, 0); c2.lineTo(0, 8); c2.lineTo(-6, 0); c2.closePath(); c2.fill();
+      c2.fillStyle = 'rgba(255,255,255,.9)'; c2.beginPath(); c2.arc(-1, -3, 1.5, 0, 7); c2.fill();
+    });
+    B.backpack = bake(30, 38, 24, (c2) => {
+      c2.fillStyle = '#c0392b'; rr(c2, -14, -12, 28, 24, 7); c2.fill();
+      c2.fillStyle = '#8e2b20'; rr(c2, -8, -20, 16, 12, 4); c2.fill();
+    });
+    const DROP_COLORS = { wood: '#a97c4f', scrap: '#b7c2cd', fur: '#ff9f43', pelt: '#d8a860', diamond: '#7fe3ff', morsel: '#f0c060', steak: '#e07a5f', csteak: '#a0522d', bfoot: '#ffd1dc', grape: '#a06cd5', brew: '#7be0a2', fuel: '#ffce54', battery: '#8ee6a8', torch: '#ffb347' };
+    for (const [item, col] of Object.entries(DROP_COLORS)) {
+      B.drop[item] = bake(16, 16, 8, (c2) => {
+        c2.fillStyle = col; rr(c2, -7, -7, 14, 14, 4); c2.fill();
+        c2.fillStyle = 'rgba(255,255,255,.5)'; c2.beginPath(); c2.arc(-2, -3, 2, 0, 7); c2.fill();
+      });
+    }
+    B.catFallback = bake(110, 120, 106, (c2) => drawCatFallback(c2, 96, 98, false, false));
+    B.catFallbackSleep = bake(110, 120, 106, (c2) => drawCatFallback(c2, 96, 98, true, false));
+    B.catFallbackShoo = bake(110, 120, 106, (c2) => drawCatFallback(c2, 96, 98, false, true));
+    return B;
   };
 })();

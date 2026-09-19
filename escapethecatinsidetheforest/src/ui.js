@@ -163,7 +163,7 @@ var G = globalThis.G || (globalThis.G = {});
       return G.CONFIG.KIDS.map(k => {
         const kid = st.kids.find(x => x.id === k.id);
         const ang = U.angleTo(p.x, p.y, k.x * C().TILE, k.y * C().TILE);
-        const deg = Math.round(ang * 180 / Math.PI + 90);
+        const deg = Math.round(U.angDiff(p.facing, ang) * 180 / Math.PI - 90);
         const m = Math.round(U.dist(p.x, p.y, k.x * C().TILE, k.y * C().TILE) / C().TILE);
         const icon = { kraken: '🐙', squid: '🦑', dino: '🦖', koala: '🐨' }[k.id];
         return `<div class="brow"><span class="bicon">${icon}</span><b>${k.name}</b>
@@ -355,14 +355,15 @@ var G = globalThis.G || (globalThis.G = {});
     }
     $('btnLight').classList.toggle('active', p.flashOn);
     $('btnLight').classList.toggle('dim', !p.hasFlashlight);
-    // compass widget (§11): arrows only
+    // compass widget (§11): arrows point relative to where you are looking
     const comp = $('compass');
     comp.innerHTML = c.KIDS.map(k => {
       const kid = st.kids.find(x => x.id === k.id);
       const ang = U.angleTo(p.x, p.y, k.x * c.TILE, k.y * c.TILE);
-      const deg = Math.round(ang * 180 / Math.PI + 90);
+      const deg = Math.round(U.angDiff(p.facing, ang) * 180 / Math.PI - 90);
+      const m = Math.round(U.dist(p.x, p.y, k.x * c.TILE, k.y * c.TILE) / c.TILE);
       const icon = { kraken: '🐙', squid: '🦑', dino: '🦖', koala: '🐨' }[k.id];
-      return `<span class="carrow ${kid.rescued ? 'done' : ''}" style="transform:rotate(${deg}deg)">${kid.rescued ? '✓' : icon + '➤'}</span>`;
+      return `<span class="citem"><span class="carrow ${kid.rescued ? 'done' : ''}" style="transform:rotate(${deg}deg)">${kid.rescued ? '✓' : icon + '➤'}</span><span class="cm">${kid.rescued ? '' : m + 'm'}</span></span>`;
     }).join('');
   };
 
