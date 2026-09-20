@@ -182,7 +182,7 @@ var G = globalThis.G || (globalThis.G = {});
     push(st.traders.pelt.x, st.traders.pelt.y, B.traderPelt);
     for (const a of st.animals) push(a.x, a.y, B.animal[a.type], { actor: a });
     for (const cu of st.cultists) push(cu.x, cu.y, B.cultist);
-    push(st.cat.x, st.cat.y, catSprite(st), { cat: true });
+    if (!st.cat.dead) push(st.cat.x, st.cat.y, catSprite(st), { cat: true });
     // fires are animated: drawn with a callback instead of a baked sprite
     push(st.fire.x, st.fire.y, null, { fire: st.fire.level, camp: true });
     for (const kf of st.kidFires) push(kf.x, kf.y, null, { fire: kf.level });
@@ -218,7 +218,10 @@ var G = globalThis.G || (globalThis.G = {});
           ctx.fillRect(it.sx - wPx / 2, yBot - hPx, wPx, hPx);
         }
       }
-      if (it.cat) drawCatMood(ctx, st, it, yBot - hPx);
+      if (it.cat) {
+        drawCatMood(ctx, st, it, yBot - hPx);
+        drawCatHealth(ctx, st, it, yBot - hPx);
+      }
     }
 
     // ---- floating fx texts / poofs ----
@@ -297,6 +300,19 @@ var G = globalThis.G || (globalThis.G = {});
       ctx.fillStyle = '#ffd76e';
       ctx.fillText('✨', it.sx, yTop - 8);
     }
+  }
+
+  // small health bar above the Cat once it has been bonked
+  function drawCatHealth(ctx, st, it, yTop) {
+    const cat = st.cat, c = C();
+    if (cat.dead || cat.hp >= c.CAT_HP) return;
+    const s = Math.min(2.2, it.scale);
+    const w = 44 * s, h = Math.max(4, 5 * s);
+    const x = it.sx - w / 2, y = yTop - 14 * s;
+    ctx.fillStyle = 'rgba(0,0,0,.45)';
+    ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+    ctx.fillStyle = '#ff8ab5';
+    ctx.fillRect(x, y, w * U.clamp(cat.hp / c.CAT_HP, 0, 1), h);
   }
 
   // Night: the world goes dark except your little glow, your flashlight beam,

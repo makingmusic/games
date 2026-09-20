@@ -60,5 +60,20 @@ check('save/load roundtrip', (() => {
   return ok;
 })());
 
+console.log('smoke: the Cat can be defeated');
+const st3 = G.newGame('story', 43);
+check('cat starts at full health', st3.cat.hp === G.CONFIG.CAT_HP && !st3.cat.dead);
+st3.player.x = st3.cat.x - 30; st3.player.y = st3.cat.y; st3.player.facing = 0;
+st3.player.weapon = 'strong';
+st3.animals.length = 0; // don't let an animal soak up a swing
+for (let i = 0; i < 10 && !st3.cat.dead; i++) { st3.player.cd = 0; G.doAttack(st3); }
+check('cat dies after enough bonks', st3.cat.dead && st3.cat.hp === 0);
+check('killing the cat wins the game', st3.over && st3.won);
+check('dead cat no longer updates or swats', (() => {
+  const hearts = st3.player.hearts, x = st3.cat.x;
+  G.updateCat(st3, 1);
+  return st3.player.hearts === hearts && st3.cat.x === x;
+})());
+
 console.log(fails === 0 ? 'SMOKE PASS' : `SMOKE FAIL (${fails})`);
 process.exit(fails === 0 ? 0 : 1);

@@ -233,10 +233,10 @@ var G = globalThis.G || (globalThis.G = {});
         return;
       }
     }
-    // the Cat: axes do nothing but CLANG! (§8)
-    if (U.dist(p.x, p.y, st.cat.x, st.cat.y) < range + 40 && Math.abs(U.angDiff(p.facing, U.angleTo(p.x, p.y, st.cat.x, st.cat.y))) < 1.2) {
-      U.fx(st, st.cat.x, st.cat.y - 50, 'text', 'CLANG!', '#ffd76e');
-      G.sfx && G.sfx('clang');
+    // the Cat: bonks chip its health; at 0 it is defeated and you win
+    if (!st.cat.dead && U.dist(p.x, p.y, st.cat.x, st.cat.y) < range + 40 && Math.abs(U.angDiff(p.facing, U.angleTo(p.x, p.y, st.cat.x, st.cat.y))) < 1.2) {
+      G.damageCat(st, dmg);
+      U.fx(st, st.cat.x, st.cat.y - 20, 'stars');
       return;
     }
     // trees: chop (faster with better axes)
@@ -328,7 +328,7 @@ var G = globalThis.G || (globalThis.G = {});
     for (const cage of st.cages) {
       const kid = st.kids.find(k => k.id === cage.kid);
       if (kid.rescued || !near(cage.x, cage.y, 52)) continue;
-      const catGuarding = st.cat.guardKid === kid.id && st.cat.state !== 'shooed' && U.dist(st.cat.x, st.cat.y, cage.x, cage.y) < 5 * c.TILE;
+      const catGuarding = !st.cat.dead && st.cat.guardKid === kid.id && st.cat.state !== 'shooed' && U.dist(st.cat.x, st.cat.y, cage.x, cage.y) < 5 * c.TILE;
       if (catGuarding) { U.toast('The Cat is watching! Shine your flashlight to shoo it!'); return; }
       cage.taps++;
       U.fx(st, cage.x, cage.y - 30, 'text', 'snip!', '#ffe9a8');
@@ -391,7 +391,7 @@ var G = globalThis.G || (globalThis.G = {});
     if (st.night !== st.gathering.night) return;
     const g = st.gathering, big = st.temples.find(t => t.big);
     // §15: "no Cat" — the Cat never comes to the party
-    if (st.cat.state !== 'shooed') { st.cat.state = 'shooed'; st.cat.shooT = c.NIGHT_LEN - st.t + 2; }
+    if (!st.cat.dead && st.cat.state !== 'shooed') { st.cat.state = 'shooed'; st.cat.shooT = c.NIGHT_LEN - st.t + 2; }
     g.waveT -= dt;
     if (g.waveT <= 0) {
       g.waveT = c.GATHERING.WAVE_INTERVAL;
@@ -614,10 +614,12 @@ var G = globalThis.G || (globalThis.G = {});
       p.cold = 0; p.hurtT = 2; p.flashOn = false;
       st.animals.length = 0; st.cultists.length = 0;
       // the Cat got bored and wandered off — no camping on the defeated player (§19)
-      st.cat.state = 'shooed'; st.cat.shooT = 45;
-      const awayA = U.angleTo(c.CAMP.x * c.TILE, c.CAMP.y * c.TILE, st.cat.x, st.cat.y) || 0.7;
-      st.cat.x = U.clamp(c.CAMP.x * c.TILE + Math.cos(awayA) * 30 * c.TILE, 200, (c.MAP_W - 2) * c.TILE);
-      st.cat.y = U.clamp(c.CAMP.y * c.TILE + Math.sin(awayA) * 30 * c.TILE, 200, (c.MAP_H - 2) * c.TILE);
+      if (!st.cat.dead) {
+        st.cat.state = 'shooed'; st.cat.shooT = 45;
+        const awayA = U.angleTo(c.CAMP.x * c.TILE, c.CAMP.y * c.TILE, st.cat.x, st.cat.y) || 0.7;
+        st.cat.x = U.clamp(c.CAMP.x * c.TILE + Math.cos(awayA) * 30 * c.TILE, 200, (c.MAP_W - 2) * c.TILE);
+        st.cat.y = U.clamp(c.CAMP.y * c.TILE + Math.sin(awayA) * 30 * c.TILE, 200, (c.MAP_H - 2) * c.TILE);
+      }
       // skip to next morning
       st.phase = 'day'; st.t = 2; st.day = st.night + 1; st.time = 0;
       G.onDefeat && G.onDefeat(st, 'story', cause);
@@ -653,7 +655,7 @@ var G = globalThis.G || (globalThis.G = {});
       gathering: { poured: st.gathering.poured, done: st.gathering.done, night: st.gathering.night },
       calm: st.calm, stats: st.stats, lastCultNight: st.lastCultNight,
       groveDiamonds: st.groveDiamonds, backpack: st.backpack, defeatCount: st.defeatCount,
-      cat: { x: st.cat.x, y: st.cat.y, state: st.cat.state },
+      cat: { x: st.cat.x, y: st.cat.y, state: st.cat.state, hp: st.cat.hp, dead: st.cat.dead },
     };
   };
 

@@ -98,7 +98,9 @@ var G = globalThis.G || (globalThis.G = {});
   // ---------- the Cat (leprompt §8) ----------
   G.updateCat = function (st, dt) {
     const c = C(), cat = st.cat, p = st.player;
+    if (cat.dead) return;
     cat.walk = (cat.walk || 0) + dt * 4;
+    cat.hitT = Math.max(0, (cat.hitT || 0) - dt);
 
     // Choose guard duty: nearest captured kid the player approaches
     let guardKid = null, best = c.CAT_GUARD_RANGE;
@@ -214,7 +216,7 @@ var G = globalThis.G || (globalThis.G = {});
 
   G.shooCat = function (st) {
     const c = C(), cat = st.cat;
-    if (cat.state === 'shooed') return;
+    if (cat.dead || cat.state === 'shooed') return;
     cat.state = 'shooed'; cat.shooT = c.CAT_SHOO_T; cat.beamT = 0;
     st.stats.catsShooed++;
     U.fx(st, cat.x, cat.y - 60, 'text', 'NO LIGHT!', '#ffd76e');
@@ -222,6 +224,24 @@ var G = globalThis.G || (globalThis.G = {});
     if (U.chance(U.rng(st.seed + st.day * 31 + st.stats.catsShooed), c.CAT_FUR_CHANCE)) {
       G.spawnDrop(st, cat.x, cat.y, 'fur', 1);
     }
+  };
+
+  // The Cat can be fought: bonks chip its health; at 0 it is defeated for good
+  // and the game is won (rescuing the kids stays optional).
+  G.damageCat = function (st, dmg) {
+    const c = C(), cat = st.cat;
+    if (cat.dead || st.over) return;
+    cat.hp -= dmg;
+    cat.hitT = 0.25;
+    U.fx(st, cat.x, cat.y - 60, 'text', 'BONK!', '#ffd76e');
+    G.sfx && G.sfx('bonk');
+    if (cat.hp > 0) return;
+    cat.hp = 0; cat.dead = true;
+    U.fx(st, cat.x, cat.y, 'poof');
+    U.fx(st, cat.x, cat.y - 80, 'text', 'THE CAT IS DEFEATED!', '#ffd76e');
+    G.sfx && G.sfx('happy');
+    G.spawnDrop(st, cat.x, cat.y, 'fur', 2);
+    G.winGame(st);
   };
 
   // ---------- animals ----------

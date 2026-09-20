@@ -282,17 +282,18 @@ var G = globalThis.G || (globalThis.G = {});
   G.onWin = function (st) {
     const el = $('win'), c = C();
     const kids = st.kids.filter(k => k.rescued).length;
+    const catDead = st.cat && st.cat.dead;
     el.innerHTML = `
       <div class="panelBox">
         <h1>🎉 YOU ESCAPED! 🎉</h1>
         <div class="kite">🪁</div>
-        <p>All ${kids} of the kids flew away with you on the giant kite-glider!</p>
+        <p>${catDead ? 'You defeated the Cat and flew away on the giant kite-glider!' : `All ${kids} of the kids flew away with you on the giant kite-glider!`}</p>
         <div class="stats">
-          <div>🌙 Nights survived: <b>${c.TOTAL_NIGHTS}</b></div>
+          <div>🌙 Nights survived: <b>${catDead ? st.night : c.TOTAL_NIGHTS}</b></div>
+          <div>🐱 The Cat: <b>${catDead ? 'defeated!' : `shooed ${st.stats.catsShooed} times`}</b></div>
           <div>🧒 Kids rescued: <b>${kids} / 4</b></div>
           <div>💎 Diamonds found: <b>${st.stats.diamonds}</b></div>
           <div>🔥 Coziest fire: <b>level ${st.stats.maxFire}</b></div>
-          <div>🐱 Times the Cat was shooed: <b>${st.stats.catsShooed}</b></div>
           <div>🐾 Animals bonked: <b>${st.stats.animalsBonked}</b></div>
         </div>
         <button class="bigbtn" id="winOk">Play again</button>

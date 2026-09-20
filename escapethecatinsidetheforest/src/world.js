@@ -185,6 +185,7 @@ var G = globalThis.G || (globalThis.G = {});
     st.cat = {
       x: (c.CAMP.x + 20) * T, y: (c.CAMP.y + 6) * T,
       state: 'prowl', // prowl | stalk | asleep | guard | shooed
+      hp: c.CAT_HP, dead: false, hitT: 0,
       beamT: 0, shooT: 0, swatT: 0, wakeT: 0, dir: 0,
       guardKid: null, wanderT: 0, wx: 0, wy: 0, walk: 0,
     };

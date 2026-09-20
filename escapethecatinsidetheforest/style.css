@@ -141,10 +141,29 @@ button, a, .slot, .screen, .tbtn, .bigbtn, .abtn, .uibtn, .closeBtn {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   background: rgba(10, 16, 24, .82); z-index: 10;
 }
-#splash { background: #10192b; cursor: pointer; }
-.splashbox { text-align: center; padding: 40px; }
-.trueline { font-size: 26px; color: #e8ecf4; line-height: 1.6; font-style: italic; }
-.tapline { margin-top: 60px; font-size: 18px; color: #7d8aa5; animation: pulse 1.6s infinite; }
+#splash { background: #10192b; cursor: pointer; overflow: hidden; }
+.crawlwrap {
+  position: absolute; inset: 0; display: flex; justify-content: center;
+  perspective: 280px; overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 80%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 80%, transparent);
+}
+.crawl {
+  position: absolute; bottom: 0; width: min(84%, 560px);
+  text-align: center; color: #ffe9a8; font-size: 24px; line-height: 1.75;
+  transform-origin: 50% 100%;
+  animation: crawl 22s linear forwards;
+}
+.crawl p { margin: 0 0 26px; }
+.crawlhead { font-size: 36px; font-weight: bold; letter-spacing: 3px; color: #e8ecf4; line-height: 1.3; }
+@keyframes crawl {
+  from { transform: rotateX(58deg) translateY(105%); }
+  to   { transform: rotateX(58deg) translateY(-130%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .crawl { position: static; animation: none; transform: none; align-self: center; }
+}
+.tapline { position: absolute; bottom: 26px; left: 0; right: 0; text-align: center; font-size: 18px; color: #7d8aa5; animation: pulse 1.6s infinite; }
 @keyframes pulse { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
 
 .titlebox { text-align: center; padding: 20px; max-width: 560px; }

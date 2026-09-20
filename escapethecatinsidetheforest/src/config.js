@@ -58,6 +58,7 @@ G.CONFIG = {
   CAT_GUARD_RANGE: 28 * 32,// player within this of a captured kid: Cat guards it (§8)
   CAT_GUARD_WAKE: 3.0,     // guarding Cat wakes after player is close this long (§8)
   CAT_LEASH: 10 * 32,      // guarding Cat will not chase beyond this of the cage
+  CAT_HP: 8,               // bonk-damage units; at 0 the Cat is defeated and you win
 
   // ---- Cultists (§9) ----
   CULT_FIRST_NIGHT: 6,     // earliest possible cultist night

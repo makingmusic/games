@@ -239,10 +239,18 @@ var G = globalThis.G || (globalThis.G = {});
   window.addEventListener('beforeunload', () => { if (G.state && G.ui.playing) G.save(G.state); });
 
   // ------------------------------------------------------------------ screens wiring (touchend + click — iPad Safari)
-  G.onTap($('splash'), () => {
-    try { localStorage.setItem('etcif_splash_seen', '1'); } catch (e) {}
+  // intro crawl: plays on every load; tap skips it, and it advances on its own
+  // when the scrolling text finishes (fallback timer covers reduced-motion)
+  let splashDone = false;
+  const finishSplash = () => {
+    if (splashDone) return;
+    splashDone = true;
     G.ui.showTitle();
-  });
+  };
+  G.onTap($('splash'), finishSplash);
+  const crawlEl = document.querySelector('#splash .crawl');
+  if (crawlEl) crawlEl.addEventListener('animationend', finishSplash);
+  setTimeout(finishSplash, 25000);
   G.onTap($('btnStory'), () => startNew('story'));
   G.onTap($('btnTrue'), () => startNew('true'));
   G.onTap($('btnContinue'), () => {
@@ -308,8 +316,6 @@ var G = globalThis.G || (globalThis.G = {});
   }
 
   // ------------------------------------------------------------------ boot
-  let seen = false;
-  try { seen = !!localStorage.getItem('etcif_splash_seen'); } catch (e) {}
   // hurt hook: pastel flash on damage (§19)
   const oldDamage = G.damagePlayer;
   G.damagePlayer = function (st2, h, sx, sy, label) {
@@ -318,6 +324,6 @@ var G = globalThis.G || (globalThis.G = {});
     if (wasPlaying) G.ui.hurtFlash();
   };
 
-  if (seen) G.ui.showTitle(); else G.ui.showSplash();
+  G.ui.showSplash();
   requestAnimationFrame(frame);
 })();
