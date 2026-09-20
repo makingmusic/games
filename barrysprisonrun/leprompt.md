@@ -143,7 +143,7 @@ Barry bounces out covered in fruit and sits down dizzy, HOY-ing sadly.
 1. **"ZAP!" — you teleport outside** the prison wall (a fun sparkle-poof, one button tap).
 2. **Grab a police car** and **drive away**: short auto-forward drive, steer left/right
    between traffic cones; hitting a cone is a gentle bonk-bounce, never a fail.
-3. Stop at a helipad. **Climb a ladder** (hold forward).
+3. Stop at a helipad. **Climb a ladder** (press Climb once — you go up automatically).
 4. **Board the helicopter** and fly: a short, happy flight — hold forward, the city scrolls
    below, the sun sets.
 5. **THE END**: "YOU ESCAPED BARRY'S PRISON!" + stats (fruit fired, times caught, time

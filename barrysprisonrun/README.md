@@ -31,6 +31,9 @@ sprint), right side drag = look around, big buttons = JUMP / USE / SHOOT
 **Desktop**: WASD or arrows move, drag mouse = look, SPACE = jump (or shoot
 once you have the bazooka), E = use/climb, F = shoot.
 
+**Ladders**: press USE/Climb once and you climb up automatically — hold back
+to climb down, JUMP to hop off.
+
 **Vents**: no crouch button — you duck automatically when you walk in (a
 "CRAWLING…" chip shows while you are in a duct).
 

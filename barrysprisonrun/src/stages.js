@@ -127,6 +127,15 @@ Stages[2] = function () {
   cell(19, 3, { solid: 0, floor: -3.2, area: 3 });
   cell(18, 3, { solid: 0, floor: -3.2, area: 3 });
 
+  // mark the vent mouth so kids can spot it from the ledge
+  addProp(19.5, 6.5, 'grilleopen', 0.62, { z: 0.9, tall: 0.62 });
+
+  // reached the far ledge: point the beacon at the vent, not the ledge
+  addTrigger(18, 6, 1.0, function () {
+    Game.setGoal('Into the open vent — crawl in!', 19.5, 6.2, 1.15);
+    Game.hint('See the open vent? Just walk in — you duck down automatically.');
+  }, true);
+
   // walk off the end of the vent: you drop down outside the prison cell
   addProp(18.6, 4.4, 'grilleopen', 0.62, { z: 0.9, tall: 0.62 });
   addTrigger(19, 3, 1.3, function () { Game.loadStage(3, { falling: true }); }, true);

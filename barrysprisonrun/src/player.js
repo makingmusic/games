@@ -74,7 +74,10 @@ Player.update = function (dt) {
     var lad = p.climb.lad;
     p.x += (p.climb.x - p.x) * Math.min(1, dt * 10);
     p.y += (p.climb.y - p.y) * Math.min(1, dt * 10);
-    var up = Input.moveY + (Input.keys['KeyW'] ? 1 : 0) - (Input.keys['KeyS'] ? 1 : 0);
+    // auto-climb: pressing Climb once carries you up on its own;
+    // hold back to climb down instead
+    var down = Input.moveY < -0.35 || Input.keys['KeyS'] || Input.keys['ArrowDown'];
+    var up = down ? -1 : 1;
     p.z += up * CONFIG.ladder.climbSpeed * dt;
     p.vz = 0;
     p.stepT += dt;
@@ -97,6 +100,24 @@ Player.update = function (dt) {
   }
 
   // ---- horizontal move with collision ----
+  // vent assist: when walking toward a duct opening, gently line up with its
+  // centre so wobbly joystick aim still slides in
+  var spd = Math.hypot(p.vx, p.vy);
+  if (p.onGround && spd > 0.3) {
+    var pcx = Math.floor(p.x), pcy = Math.floor(p.y);
+    for (var d = 0; d < 4; d++) {
+      var ax = pcx + [1, -1, 0, 0][d], ay = pcy + [0, 0, 1, -1][d];
+      if (!inMap(ax, ay)) continue;
+      var ak = idx(ax, ay);
+      if (World.ctype[ak] !== T_VENT) continue;
+      if (Math.abs(World.floor[ak] - p.z) > 0.5) continue;
+      var toX = ax + 0.5 - p.x, toY = ay + 0.5 - p.y;
+      if ((p.vx * toX + p.vy * toY) / spd < 0.35) continue;  // not heading in
+      var lineUp = Math.min(1, dt * 5);
+      if (d < 2) p.y += (ay + 0.5 - p.y) * lineUp;   // duct to the E/W: centre y
+      else p.x += (ax + 0.5 - p.x) * lineUp;         // duct to the N/S: centre x
+    }
+  }
   var airborne = !p.onGround;
   var nx = p.x + p.vx * dt;
   if (!blockedAt(nx, p.y, p.z, airborne)) p.x = nx; else p.vx *= 0.2;
@@ -220,6 +241,7 @@ Player.checkUse = function () {
         p.climb = { x: u.ladder.x + 0.5, y: u.ladder.y + 0.5, lad: u.ladder };
         p.z = Math.max(p.z, u.ladder.base + 0.04);
         p.vz = 0; p.vx = p.vy = 0;
+        Game.hint('Up you go — climbing is automatic! JUMP to hop off.');
       } else if (u.fn) {
         u.fn(u);
       }
