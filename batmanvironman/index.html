@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BATMAN vs IRON MAN — Comic Arena Fighter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Bangers', 'Impact', 'Arial Black', sans-serif;
+    background-color: #ffd94a;
+    background-image: radial-gradient(rgba(0,0,0,.14) 1.4px, transparent 1.5px);
+    background-size: 16px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 16px;
+    overflow: hidden;
+    user-select: none;
+  }
+  #stage {
+    position: relative;
+    width: min(96vw, calc((100vh - 90px) * 16 / 9));
+    aspect-ratio: 16 / 9;
+  }
+  canvas#game {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: #ffd94a;
+    border: 5px solid #000;
+    border-radius: 6px;
+    box-shadow: 10px 10px 0 rgba(0,0,0,.85);
+  }
+  .overlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 18px; text-align: center;
+  }
+  .hidden { display: none !important; }
+
+  .panel {
+    background: #fff;
+    border: 5px solid #000;
+    border-radius: 8px;
+    box-shadow: 10px 10px 0 rgba(0,0,0,.85);
+    padding: 26px 44px 30px;
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    transform: rotate(-.6deg);
+  }
+  .title-line { display: flex; align-items: center; gap: 18px; }
+  .bigname {
+    font-size: 64px; line-height: 1; letter-spacing: 3px;
+    -webkit-text-stroke: 2.5px #000; text-shadow: 5px 5px 0 #000;
+  }
+  .bigname.batman  { color: #3b4152; transform: rotate(-3deg); }
+  .bigname.ironman { color: #d51a2a; transform: rotate(3deg); }
+  .vs {
+    width: 84px; height: 84px; display: flex; align-items: center; justify-content: center;
+    background: #ffd400; border: 4px solid #000; border-radius: 50%;
+    font-size: 44px; color: #000; transform: rotate(-8deg);
+    box-shadow: 4px 4px 0 #000;
+  }
+  .subtitle { font-size: 20px; letter-spacing: 4px; color: #111; }
+
+  .btn {
+    font-family: inherit; font-size: 30px; letter-spacing: 3px;
+    background: #ffd400; color: #000;
+    border: 4px solid #000; border-radius: 6px;
+    box-shadow: 5px 5px 0 #000;
+    padding: 8px 26px; cursor: pointer;
+    transition: transform .07s, box-shadow .07s;
+  }
+  .btn:hover  { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 #000; }
+  .btn:active { transform: translate(3px,3px);  box-shadow: 2px 2px 0 #000; }
+  .btn.red    { background: #d51a2a; color: #fff; }
+  .row { display: flex; gap: 18px; }
+
+  #select-title { font-size: 44px; color: #111; letter-spacing: 3px; }
+  .hero-row { display: flex; gap: 26px; }
+  .hero-card {
+    background: #fff; border: 4px solid #000; border-radius: 8px;
+    box-shadow: 6px 6px 0 #000; padding: 10px 14px 6px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    transition: transform .07s, box-shadow .07s;
+  }
+  .hero-card:hover { transform: translate(-3px,-3px) rotate(-1deg); box-shadow: 9px 9px 0 #000; }
+  .hero-card canvas { width: 150px; height: 180px; display: block; }
+  .hero-card .hname { font-size: 30px; letter-spacing: 2px; }
+  .hero-card .hname.batman { color: #3b4152; }
+  .hero-card .hname.ironman { color: #d51a2a; }
+
+  #ko-title { font-size: 84px; letter-spacing: 4px; color: #ffd400;
+    -webkit-text-stroke: 3px #000; text-shadow: 6px 6px 0 #000; transform: rotate(-2deg); }
+  #ko-sub   { font-size: 40px; letter-spacing: 3px; color: #fff;
+    -webkit-text-stroke: 1.5px #000; text-shadow: 4px 4px 0 #000; }
+
+  #controls {
+    font-size: 17px; letter-spacing: 2px; color: #fff;
+    background: #000; border-radius: 6px; border: 3px solid #fff;
+    outline: 3px solid #000;
+    padding: 8px 18px; text-align: center;
+    box-shadow: 6px 6px 0 rgba(0,0,0,.5);
+  }
+  #controls .p1 { color: #ffd94a; } #controls .p2 { color: #8fd8ff; }
+  .hint { font-size: 15px; letter-spacing: 2px; color: #333; }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <canvas id="game"></canvas>
+
+    <div id="menu" class="overlay">
+      <div class="panel">
+        <div class="title-line">
+          <span class="bigname batman">BATMAN</span>
+          <span class="vs">VS</span>
+          <span class="bigname ironman">IRON&nbsp;MAN</span>
+        </div>
+        <div class="subtitle">A COMIC BOOK ARENA BRAWL</div>
+        <div class="row">
+          <button class="btn" id="btn-1p">1&nbsp;PLAYER</button>
+          <button class="btn red" id="btn-2p">2&nbsp;PLAYERS</button>
+        </div>
+        <div class="hint">FIRST HERO TO LAND THE K.O. WINS!</div>
+      </div>
+    </div>
+
+    <div id="select" class="overlay hidden">
+      <div class="panel">
+        <div id="select-title">CHOOSE YOUR HERO</div>
+        <div class="hero-row">
+          <div class="hero-card" id="card-batman"><canvas id="port-batman" width="300" height="360"></canvas><span class="hname batman">BATMAN</span></div>
+          <div class="hero-card" id="card-ironman"><canvas id="port-ironman" width="300" height="360"></canvas><span class="hname ironman">IRON&nbsp;MAN</span></div>
+        </div>
+        <button class="btn" id="btn-back">BACK</button>
+      </div>
+    </div>
+
+    <div id="ko" class="overlay hidden">
+      <div id="ko-title">K.O.!</div>
+      <div id="ko-sub">BATMAN WINS!</div>
+      <div class="row">
+        <button class="btn" id="btn-rematch">REMATCH&nbsp;(R)</button>
+        <button class="btn red" id="btn-menu">MENU&nbsp;(ESC)</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="controls">
+    <span class="p1">P1 BATMAN: A/D MOVE · W JUMP · S BLOCK · F PUNCH · G SPECIAL</span>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    <span class="p2">P2 IRON MAN: ◀ ▶ MOVE · ▲ JUMP · ▼ BLOCK · K PUNCH · L SPECIAL</span>
+  </div>
+
+<script>
+"use strict";
+/* ================= CORE SETUP ================= */
+const W = 1200, H = 675, GROUND = H - 80, WALL = 60;
+const cv = document.getElementById("game");
+const g = cv.getContext("2d");
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+cv.width = W * DPR; cv.height = H * DPR; g.scale(DPR, DPR);
+
+let state = "menu";          // menu | select | countdown | fight | ko
+let T = 0;                   // global clock (seconds)
+let shake = 0, hitpause = 0, slowmo = 1, koTimer = 0, cdTimer = 0;
+let winner = null;
+const popups = [], sparks = [], projs = [];
+let p1 = null, p2 = null;
+let mode = "2p";             // "1p" | "2p"
+
+const rand = (a, b) => a + Math.random() * (b - a);
+const pick = arr => arr[(Math.random() * arr.length) | 0];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+/* ================= INPUT ================= */
+const keys = {};
+addEventListener("keydown", e => {
+  if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Space"].includes(e.code)) e.preventDefault();
+  keys[e.code] = true; unlockAudio();
+  if (state === "ko") { if (e.code === "KeyR") rematch(); if (e.code === "Escape") toMenu(); }
+  else if (e.code === "Escape" && (state === "fight" || state === "countdown")) toMenu();
+});
+addEventListener("keyup", e => { keys[e.code] = false; });
+addEventListener("blur", () => { for (const k in keys) keys[k] = false; });
+
+function readInput(side) {
+  if (side === 1) return {
+    left: !!keys.KeyA, right: !!keys.KeyD, jump: !!keys.KeyW,
+    block: !!keys.KeyS, punch: !!keys.KeyF, special: !!keys.KeyG
+  };
+  return {
+    left: !!keys.ArrowLeft, right: !!keys.ArrowRight, jump: !!keys.ArrowUp,
+    block: !!keys.ArrowDown, punch: !!keys.KeyK, special: !!keys.KeyL
+  };
+}
+
+/* ================= TINY SYNTH SOUNDS ================= */
+let AC = null;
+function unlockAudio() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === "suspended") AC.resume(); }
+function tone(f0, f1, dur, type, vol) {
+  if (!AC) return;
+  const o = AC.createOscillator(), gn = AC.createGain(), t0 = AC.currentTime;
+  o.type = type; o.frequency.setValueAtTime(f0, t0);
+  o.frequency.exponentialRampToValueAtTime(Math.max(f1, 1), t0 + dur);
+  gn.gain.setValueAtTime(vol, t0); gn.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+  o.connect(gn); gn.connect(AC.destination); o.start(t0); o.stop(t0 + dur + 0.02);
+}
+const sfx = {
+  punch:  () => tone(180, 50, 0.12, "square", 0.12),
+  special:() => tone(900, 140, 0.3, "sawtooth", 0.1),
+  hit:    () => tone(320, 60, 0.18, "square", 0.16),
+  block:  () => tone(1200, 700, 0.1, "triangle", 0.12),
+  ko:     () => { tone(120, 28, 0.7, "sawtooth", 0.22); tone(90, 24, 0.9, "square", 0.14); },
+  tick:   () => tone(520, 520, 0.07, "square", 0.07),
+  fight:  () => tone(880, 1320, 0.25, "square", 0.12),
+  jump:   () => tone(300, 620, 0.14, "triangle", 0.07),
+};
+
+/* ================= COMIC FX: POPUPS + SPARKS ================= */
+function popup(text, x, y, burst, fill, size) {
+  popups.push({ text, x, y, rot: rand(-0.22, 0.22), t: 0, life: 0.9, burst, fill, size: size || 44 });
+}
+function spark(x, y, color) { sparks.push({ x, y, t: 0, color: color || "#fff" }); }
+
+function drawStarburst(c, r1, r2, n, fill, stroke) {
+  c.beginPath();
+  for (let i = 0; i < n * 2; i++) {
+    const ang = (i / (n * 2)) * Math.PI * 2, r = i % 2 ? r2 : r1;
+    c[i ? "lineTo" : "moveTo"](Math.cos(ang) * r, Math.sin(ang) * r);
+  }
+  c.closePath(); c.fillStyle = fill; c.fill();
+  c.lineWidth = 3; c.strokeStyle = stroke; c.stroke();
+}
+
+function drawPopups(c, dt) {
+  for (let i = popups.length - 1; i >= 0; i--) {
+    const p = popups[i]; p.t += dt;
+    if (p.t > p.life) { popups.splice(i, 1); continue; }
+    const grow = p.t < 0.16 ? (p.t / 0.16) : 1;
+    const s = grow < 1 ? 1.7 - 0.7 * (1 - Math.pow(1 - grow, 3)) : 1; // overshoot pop
+    const a = p.t > p.life - 0.3 ? (p.life - p.t) / 0.3 : 1;
+    c.save(); c.globalAlpha = a; c.translate(p.x, p.y - p.t * 26); c.rotate(p.rot); c.scale(s, s);
+    drawStarburst(c, p.size * 1.25, p.size * 0.8, 13, p.burst, "#000");
+    c.font = `${p.size}px Bangers, Impact, sans-serif`; c.textAlign = "center"; c.textBaseline = "middle";
+    c.lineWidth = 5; c.strokeStyle = "#000"; c.strokeText(p.text, 0, 2);
+    c.fillStyle = p.fill; c.fillText(p.text, 0, 2);
+    c.restore();
+  }
+  for (let i = sparks.length - 1; i >= 0; i--) {
+    const s = sparks[i]; s.t += dt;
+    if (s.t > 0.18) { sparks.splice(i, 1); continue; }
+    const a = 1 - s.t / 0.18;
+    c.save(); c.globalAlpha = a; c.strokeStyle = s.color; c.lineWidth = 4; c.lineCap = "round";
+    for (let k = 0; k < 6; k++) {
+      const ang = k * Math.PI / 3 + 0.4, r1 = 8 + s.t * 90, r2 = r1 + 16;
+      c.beginPath(); c.moveTo(s.x + Math.cos(ang) * r1, s.y + Math.sin(ang) * r1);
+      c.lineTo(s.x + Math.cos(ang) * r2, s.y + Math.sin(ang) * r2); c.stroke();
+    }
+    c.restore();
+  }
+}
+
+/* ================= BACKGROUND (pre-rendered comic panel) ================= */
+const bg = document.createElement("canvas"); bg.width = W; bg.height = H;
+(function paintBG() {
+  const b = bg.getContext("2d");
+  b.fillStyle = "#ffd94a"; b.fillRect(0, 0, W, H);
+  // halftone dots, bigger toward the top
+  for (let y = 0; y < H; y += 13) for (let x = 0; x < W; x += 13) {
+    b.fillStyle = "rgba(210,120,10,0.25)";
+    const r = 0.8 + (y / H) * 1.6;
+    b.beginPath(); b.arc(x, y, r, 0, 7); b.fill();
+  }
+  // skyline silhouette
+  let x = -20;
+  let seed = 7;
+  const srand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  while (x < W + 40) {
+    const w = 60 + srand() * 110, h = 120 + srand() * 230;
+    b.fillStyle = "#1d2027"; b.fillRect(x, GROUND - h, w, h);
+    b.fillStyle = "#ffd94a";
+    for (let wy = GROUND - h + 18; wy < GROUND - 30; wy += 34)
+      for (let wx = x + 12; wx < x + w - 14; wx += 26)
+        if (srand() < 0.28) b.fillRect(wx, wy, 10, 14);
+    x += w + 4 + srand() * 10;
+  }
+  // ground
+  b.fillStyle = "#2b2e38"; b.fillRect(0, GROUND, W, H - GROUND);
+  b.fillStyle = "#000"; b.fillRect(0, GROUND, W, 6);
+  b.strokeStyle = "rgba(255,255,255,0.10)"; b.lineWidth = 2;
+  for (let i = -H; i < W; i += 46) { b.beginPath(); b.moveTo(i, H); b.lineTo(i + 40, GROUND); b.stroke(); }
+})();
+
+function drawSunburst(c, t) {
+  c.save(); c.translate(W / 2, GROUND - 170); c.rotate(t * 0.03);
+  const n = 20, R = 1700;
+  for (let i = 0; i < n; i++) {
+    if (i % 2) continue;
+    const a1 = (i / n) * Math.PI * 2, a2 = ((i + 1) / n) * Math.PI * 2;
+    c.fillStyle = "rgba(255,120,20,0.16)";
+    c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, R, a1, a2); c.closePath(); c.fill();
+  }
+  c.restore();
+}
+
+/* ===== chunk 2 continues below ===== */
+</script>
+</body>
+</html>
