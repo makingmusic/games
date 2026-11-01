@@ -159,5 +159,6 @@ offline) so mobile players can Add to Home Screen without store review.
 | Elephanto | `elephanto/` | GitHub Pages: https://makingmusic.github.io/games/elephanto/ | not yet |
 | Signal & Steel | `memory44/` | **not published** (work in progress; no card on the landing page). When ready: pass-and-play on GitHub Pages, Node host required for online rooms | not yet |
 | Barry's Prison Run | `barrysprisonrun/` | GitHub Pages: https://makingmusic.github.io/games/barrysprisonrun/ | not yet |
+| 100-Player Meme Maze | `100playermememaze/` | GitHub Pages: https://makingmusic.github.io/games/100playermememaze/ | not yet |
 
 Update this table as each game ships somewhere.

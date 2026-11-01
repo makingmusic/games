@@ -12,7 +12,7 @@ every round.
 - Audience: kids ~7-9. Funny-scary, forgiving, big readable UI.
 - Design record: `docs/spec.md` (the game director's verbatim instructions)
 - Build prompt: `docs/leprompt.md`
-- Status: **built — playable locally, not yet published** (no landing-page card)
+- Status: ✅ **published** — play it at https://makingmusic.github.io/games/100playermememaze/ (or open `index.html` locally)
 
 ## Play
 
