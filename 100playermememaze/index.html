@@ -35,6 +35,8 @@
   body.touch #stick.on{display:block}
   #lookPad{position:fixed;right:0;top:0;width:55%;height:100%;z-index:11;display:none}
   body.touch #lookPad{display:block}
+  #errbar{position:fixed;top:0;left:0;right:0;z-index:60;display:none;background:#c62828;color:#fff;font-size:16px;padding:10px 14px;text-align:center}
+  .ver{position:fixed;right:12px;bottom:10px;color:rgba(255,255,255,.75);font-size:13px;z-index:21;pointer-events:none}
 </style>
 </head>
 <body>
@@ -52,6 +54,7 @@
   <h1>100-PLAYER MEME MAZE</h1>
   <p>Dodge the giant surprised cat 🐱, cross the lava 🌋, find the secret button 🔴, switch off the lasers, and grab the MASSIVE trophy 🏆 — with your 99 helpers!</p>
   <button id="playBtn" class="bigbtn">▶ PLAY</button>
+  <div class="ver">v1.1</div>
 </div>
 
 <div id="win" class="overlay">
@@ -62,6 +65,16 @@
 
 <div id="stick"><div id="stickNub"></div></div>
 <div id="loading">Loading the meme… 😺</div>
+<div id="errbar"></div>
+<script>
+  // must live inline: shows errors even if the game scripts fail to load at all
+  window.addEventListener('error', function (e) {
+    var b = document.getElementById('errbar');
+    if (!b) return;
+    b.style.display = 'block';
+    b.textContent = 'Oops! ' + (e.message || 'something broke') + ' — tell the game maker!';
+  });
+</script>
 
 <script src="js/vendor/three.min.js"></script>
 <script src="js/utils.js"></script>
