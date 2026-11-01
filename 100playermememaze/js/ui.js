@@ -21,8 +21,17 @@ const UI = {
       stick: document.getElementById('stick'),
       nub: document.getElementById('stickNub'),
     };
-    document.getElementById('playBtn').addEventListener('click', () => { Sound.unlock(); this.el.title.style.display = 'none'; onPlay(); });
-    document.getElementById('againBtn').addEventListener('click', () => { this.el.win.style.display = 'none'; onPlayAgain(); });
+    // buttons fire on click (desktop) AND touchend (iPod/iPad fallback), guarded so they fire once
+    const once = (fn) => { let done = false; return () => { if (done) return; done = true; fn(); }; };
+    const playOnce = once(() => { Sound.unlock(); this.el.title.style.display = 'none'; onPlay(); });
+    const againOnce = once(() => { this.el.win.style.display = 'none'; onPlayAgain(); });
+    const hook = (id, fn) => {
+      const b = document.getElementById(id);
+      b.addEventListener('click', fn);
+      b.addEventListener('touchend', (e) => { e.preventDefault(); e.stopPropagation(); fn(); }, { passive: false });
+    };
+    hook('playBtn', playOnce);
+    hook('againBtn', againOnce);
     if (!this.isTouch) {
       const canvas = document.getElementById('game');
       canvas.addEventListener('click', () => { try { const r = canvas.requestPointerLock(); if (r && r.catch) r.catch(() => {}); } catch (e) { /* ignore */ } });
