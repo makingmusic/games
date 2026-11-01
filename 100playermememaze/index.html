@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>100-Player Meme Maze</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<link rel="icon" href="data:,">
+<style>
+  html,body{margin:0;padding:0;height:100%;background:#0b0d14;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+  canvas{display:block;width:100vw;height:100vh}
+  *{font-family:'Comic Sans MS','Chalkboard SE','Comic Neue',sans-serif;box-sizing:border-box}
+  .overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;text-align:center}
+  #title{background:linear-gradient(180deg,#12325e 0%,#2b6cb8 55%,#ffb35c 130%)}
+  #title h1{color:#fff;font-size:clamp(34px,7vw,76px);margin:0 20px;text-shadow:0 5px 0 rgba(0,0,0,.35);letter-spacing:1px}
+  #title .cat{font-size:clamp(60px,12vw,120px);line-height:1;margin:12px 0;filter:drop-shadow(0 8px 12px rgba(0,0,0,.4))}
+  #title p{color:#ffe9c4;font-size:clamp(16px,2.6vw,26px);margin:6px 20px 22px;max-width:640px}
+  .bigbtn{font-size:clamp(24px,4vw,40px);padding:16px 60px;border-radius:60px;border:0;cursor:pointer;color:#5c2c00;background:linear-gradient(180deg,#ffd23f,#ffb020);box-shadow:0 8px 0 #c07a00,0 14px 24px rgba(0,0,0,.4);transition:transform .08s}
+  .bigbtn:active{transform:translateY(5px);box-shadow:0 3px 0 #c07a00}
+  #win{display:none;background:radial-gradient(circle at 50% 40%,rgba(255,214,90,.35),rgba(10,20,40,.88))}
+  #win h1{color:#ffd23f;font-size:clamp(40px,9vw,96px);margin:0;text-shadow:0 6px 0 rgba(120,60,0,.6)}
+  #win p{color:#fff;font-size:clamp(18px,3vw,30px);margin:8px 0 26px}
+  #hud{position:fixed;top:0;left:0;right:0;z-index:10;pointer-events:none;padding:14px 18px}
+  #plankChip{display:inline-flex;align-items:center;gap:10px;background:rgba(20,26,40,.72);border-radius:40px;padding:10px 22px;color:#ffd9a0;font-size:28px;font-weight:bold;border:3px solid rgba(255,210,120,.5)}
+  #hint{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(30px);z-index:10;background:rgba(20,26,40,.82);color:#fff;padding:12px 28px;border-radius:30px;font-size:clamp(17px,2.6vw,24px);opacity:0;transition:all .4s;max-width:86vw;text-align:center;pointer-events:none}
+  #hint.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #flash{position:fixed;inset:0;background:radial-gradient(circle,rgba(255,0,0,.28),rgba(180,0,0,.66));opacity:0;pointer-events:none;z-index:15}
+  #flash.boom{animation:flash 1.1s ease-out}
+  @keyframes flash{0%{opacity:1}100%{opacity:0}}
+  #deathMsg{position:fixed;top:34%;left:50%;transform:translateX(-50%);z-index:16;color:#fff;font-size:clamp(30px,6vw,58px);font-weight:bold;text-shadow:0 4px 0 rgba(120,0,0,.8);opacity:0;pointer-events:none}
+  #deathMsg.boom{animation:death 1.2s ease-out}
+  @keyframes death{0%{opacity:0;transform:translateX(-50%) scale(.4)}15%{opacity:1;transform:translateX(-50%) scale(1.15)}30%{transform:translateX(-50%) scale(1)}80%{opacity:1}100%{opacity:0}}
+  #loading{position:fixed;inset:0;z-index:40;background:#12325e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px}
+  #stick{position:fixed;width:130px;height:130px;border-radius:50%;border:4px solid rgba(255,255,255,.5);background:rgba(255,255,255,.12);display:none;z-index:12;pointer-events:none}
+  #stickNub{position:absolute;left:35px;top:35px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.75)}
+  body.touch #stick.on{display:block}
+  #lookPad{position:fixed;right:0;top:0;width:55%;height:100%;z-index:11;display:none}
+  body.touch #lookPad{display:block}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hud">
+  <div id="plankChip">🪵 <span id="plankCount">0</span></div>
+</div>
+<div id="hint"></div>
+<div id="flash"></div>
+<div id="deathMsg">PUM PUM PUM 💀</div>
+
+<div id="title" class="overlay">
+  <div class="cat">🙀</div>
+  <h1>100-PLAYER MEME MAZE</h1>
+  <p>Dodge the giant surprised cat 🐱, cross the lava 🌋, find the secret button 🔴, switch off the lasers, and grab the MASSIVE trophy 🏆 — with your 99 helpers!</p>
+  <button id="playBtn" class="bigbtn">▶ PLAY</button>
+</div>
+
+<div id="win" class="overlay">
+  <h1>OH MA GA! 🏆</h1>
+  <p>YOU grabbed the trophy! You win!</p>
+  <button id="againBtn" class="bigbtn">🔁 PLAY AGAIN</button>
+</div>
+
+<div id="stick"><div id="stickNub"></div></div>
+<div id="loading">Loading the meme… 😺</div>
+
+<script src="js/vendor/three.min.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/textures.js"></script>
+<script src="js/maze.js"></script>
+<script src="js/world.js"></script>
+<script src="js/player.js"></script>
+<script src="js/npc.js"></script>
+<script src="js/cat.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

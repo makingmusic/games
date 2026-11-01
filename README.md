@@ -11,6 +11,7 @@ games/
 ## Games
 
 - **99nights** — "99 Nights": a forest rescue survival game. Original spec in `99nights/docs/original_specs.md`, build prompt in `99nights/docs/leprompt.md`.
+- **100playermememaze** — "100-Player Meme Maze": a first-person 3D maze for kids — you + 99 helpers, one giant surprised meme cat, lava, plank bridges, lasers, a hidden button and a MASSIVE trophy. Design record in `100playermememaze/docs/`. **Work in progress — not published.**
 - **escapethecatinsidetheforest** — "Escape the Cat Inside the Forest": shoo the Cat with a flashlight, free 4 kids, survive 85 nights. Spec in `escapethecatinsidetheforest/docs/`, build prompt in `escapethecatinsidetheforest/leprompt.md`.
 - **elephanto** — "Elephanto": a first-person arena brawler in the evil metal base. Design notes in `elephanto/docs/`.
 - **memory44** — "Signal & Steel": an original two-player hex tactics game with pass-and-play and temporary online rooms. Product notes are in `memory44/docs/`. **Work in progress — not published.**
