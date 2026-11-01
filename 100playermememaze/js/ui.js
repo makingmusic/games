@@ -34,8 +34,14 @@ const UI = {
 
   initTouch() {
     const stickZone = 0.45; // left 45% of the screen = move stick
+    // touches on real UI controls must keep their native click (preventDefault on
+    // touchstart cancels the synthesized click on iOS — buttons would never fire)
+    const isUITouch = (t) => !!(t.target && t.target.closest && t.target.closest('button, a'));
     const onStart = (e) => {
+      let consumed = false;
       for (const t of e.changedTouches) {
+        if (isUITouch(t)) continue; // let buttons be buttons
+        consumed = true;
         if (t.clientX < window.innerWidth * stickZone && !this._stickTouch) {
           this._stickTouch = t.identifier;
           this._stickOrigin = { x: t.clientX, y: t.clientY };
@@ -47,35 +53,40 @@ const UI = {
           this._lastLook = { x: t.clientX, y: t.clientY };
         }
       }
-      e.preventDefault();
+      if (consumed) e.preventDefault();
     };
     const onMove = (e) => {
+      let consumed = false;
       for (const t of e.changedTouches) {
         if (t.identifier === this._stickTouch) {
+          consumed = true;
           const dx = clamp(t.clientX - this._stickOrigin.x, -55, 55);
           const dy = clamp(t.clientY - this._stickOrigin.y, -55, 55);
           this._move.x = dx / 55;
           this._move.y = dy / 55;
           this.el.nub.style.transform = `translate(${dx * 0.55}px, ${dy * 0.55}px)`;
         } else if (t.identifier === this._lookTouch) {
+          consumed = true;
           this._look.dx += t.clientX - this._lastLook.x;
           this._look.dy += t.clientY - this._lastLook.y;
           this._lastLook = { x: t.clientX, y: t.clientY };
         }
       }
-      e.preventDefault();
+      if (consumed) e.preventDefault();
     };
     const onEnd = (e) => {
+      let consumed = false;
       for (const t of e.changedTouches) {
         if (t.identifier === this._stickTouch) {
+          consumed = true;
           this._stickTouch = null;
           this._move.x = this._move.y = 0;
           this.el.nub.style.transform = 'translate(0,0)';
           this.el.stick.classList.remove('on');
         }
-        if (t.identifier === this._lookTouch) this._lookTouch = null;
+        if (t.identifier === this._lookTouch) { consumed = true; this._lookTouch = null; }
       }
-      e.preventDefault();
+      if (consumed) e.preventDefault();
     };
     document.addEventListener('touchstart', onStart, { passive: false });
     document.addEventListener('touchmove', onMove, { passive: false });
